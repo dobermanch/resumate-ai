@@ -1,0 +1,22 @@
+{
+  "name": "cv-wizard-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "dotenv": "^16.4.7",
+    "hono": "^4.6.20",
+    "openai": "^4.77.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.11",
+    "tsx": "^4.19.2",
+    "typescript": "~5.8.2"
+  }
+}
