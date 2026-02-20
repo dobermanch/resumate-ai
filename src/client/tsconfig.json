@@ -26,8 +26,7 @@
     "noEmit": true
   },
   "include": [
-    "vite-env.d.ts",
-    "index.tsx",
-    "vite.config.ts"
+    "**/*.ts",
+    "**/*.tsx"
   ]
 }
