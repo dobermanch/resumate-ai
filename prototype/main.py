@@ -140,16 +140,17 @@ history = []
 def generate(resume, job, history):
     current_resume = resume
     recommendations = ""
-    if history:
-        current_resume = history[-1]["suggestion"]
-        recommendations = history[-1]["analysis"]
+    # if history:
+    #     current_resume = history[-1]["suggestion"]
+    #     recommendations = history[-1]["analysis"]
 
-    new_resume = generate_suggestion(current_resume, job)
-    if new_resume:
-        analysis = generate_analysis(new_resume, job, recommendations)
-        cover_letter = generate_cover_letter(new_resume, job)
+    # new_resume = generate_suggestion(current_resume, job)
+    # if new_resume:
+    #     analysis = generate_analysis(new_resume, job, recommendations)
+    #     cover_letter = generate_cover_letter(new_resume, job)
 
-    return (new_resume, analysis, cover_letter)
+    #return (new_resume, analysis, cover_letter)
+    return ("new resume", "analytics", "cover_letter")
 
 
 def add_version(versions, resume, job):
@@ -168,6 +169,7 @@ def add_version(versions, resume, job):
         gr.update(choices=names, value=names[-1]),
         suggestion,
         analysis,
+        cover_letter,
     )
 
 def select_version(version_name, versions):
