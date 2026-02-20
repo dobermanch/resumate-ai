@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import QRCode from 'qrcode';
 import { createRoot } from 'react-dom/client';
 import {
   FileText,
@@ -100,7 +101,30 @@ const DEFAULT_SETTINGS: AppSettings = {
 
 // --- Components ---
 
-const Header = ({ onOpenSettings }: { onOpenSettings: () => void }) => (
+const CountdownTimer = ({ expiresAt, onExpire }: { expiresAt: number; onExpire: () => void }) => {
+  const [remaining, setRemaining] = useState(Math.max(0, expiresAt - Date.now()));
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const left = Math.max(0, expiresAt - Date.now());
+      setRemaining(left);
+      if (left === 0) {
+        clearInterval(interval);
+        onExpire();
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [expiresAt]);
+
+  const totalSeconds = Math.ceil(remaining / 1000);
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  const parts = [...(h > 0 ? [`${h}h`] : []), ...(m > 0 || h > 0 ? [`${m}m`] : []), [`${s}s`]];
+  return <span className="font-mono font-bold text-slate-700">{parts.join(' ')}</span>;
+};
+
+const Header = ({ onOpenSettings, onOpenTunnel, isLocalhost }: { onOpenSettings: () => void; onOpenTunnel: () => void; isLocalhost: boolean }) => (
   <header className="h-16 border-b bg-white flex items-center justify-between px-6 sticky top-0 z-10 shrink-0">
     <div className="flex items-center gap-3">
       <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-200">
@@ -112,6 +136,15 @@ const Header = ({ onOpenSettings }: { onOpenSettings: () => void }) => (
       </div>
     </div>
     <div className="flex items-center gap-4">
+      {isLocalhost && (
+        <button
+          onClick={onOpenTunnel}
+          className="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors"
+          title="Share publicly"
+        >
+          <Globe className="w-5 h-5" />
+        </button>
+      )}
       <button
         onClick={onOpenSettings}
         className="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors"
@@ -434,6 +467,17 @@ const App = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState<'resume' | 'letter' | 'interview' | 'analysis'>('resume');
   const [showSettings, setShowSettings] = useState(false);
+  const [showTunnel, setShowTunnel] = useState(false);
+  const [isLocalAccess, setIsLocalAccess] = useState(false);
+  const [tunnelDuration, setTunnelDuration] = useState(0); // 0 = indefinite, otherwise minutes
+  const [tunnelInfo, setTunnelInfo] = useState<{
+    isLoading: boolean;
+    isRunning: boolean;
+    url: string | null;
+    qrCode: string | null;
+    error: string | null;
+    expiresAt: number | null;
+  }>({ isLoading: false, isRunning: false, url: null, qrCode: null, error: null, expiresAt: null });
   const [hasInitialAnalysisStarted, setHasInitialAnalysisStarted] = useState(false);
 
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
@@ -449,6 +493,20 @@ const App = () => {
     }
 
     init();
+
+    // Detect if this page is being accessed via the public tunnel URL.
+    // Compare window.location.hostname against the tunnel URL returned by the server —
+    // this works through any proxy chain (Docker, Vite, nginx) since the browser
+    // always knows its own hostname regardless of what headers the proxies rewrite.
+    fetch('/api/tunnel/status')
+      .then(r => r.json())
+      .then(data => {
+        const isPublic = data.url
+          ? window.location.hostname === new URL(data.url).hostname
+          : false;
+        setIsLocalAccess(!isPublic);
+      })
+      .catch(() => {});
   }, []);
 
 
@@ -695,11 +753,49 @@ const App = () => {
     //alert("Copied to clipboard!");
   };
 
+  const handleOpenTunnel = async () => {
+    setShowTunnel(true);
+    try {
+      const res = await fetch('/api/tunnel/status');
+      const data = await res.json();
+      const qrCode = data.url ? await QRCode.toDataURL(data.url) : null;
+      setTunnelInfo({ isLoading: false, isRunning: data.running, url: data.url ?? null, qrCode, error: null, expiresAt: data.expiresAt ?? null });
+    } catch {
+      setTunnelInfo(prev => ({ ...prev, isLoading: false, error: 'Failed to check tunnel status' }));
+    }
+  };
+
+  const handleStartTunnel = async () => {
+    setTunnelInfo(prev => ({ ...prev, isLoading: true, error: null }));
+    try {
+      const res = await fetch('/api/tunnel/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ duration: tunnelDuration }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setTunnelInfo(prev => ({ ...prev, isLoading: false, error: data.error ?? 'Failed to start tunnel' }));
+      } else {
+        const qrCode = await QRCode.toDataURL(data.url);
+        setTunnelInfo({ isLoading: false, isRunning: true, url: data.url, qrCode, error: null, expiresAt: data.expiresAt ?? null });
+      }
+    } catch {
+      setTunnelInfo(prev => ({ ...prev, isLoading: false, error: 'Network error starting tunnel' }));
+    }
+  };
+
+  const handleStopTunnel = async () => {
+    setTunnelInfo(prev => ({ ...prev, isLoading: true }));
+    await fetch('/api/tunnel/stop', { method: 'POST' });
+    setTunnelInfo({ isLoading: false, isRunning: false, url: null, qrCode: null, error: null, expiresAt: null });
+  };
+
   const currentVersion = versions[currentIndex];
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-white">
-      <Header onOpenSettings={() => setShowSettings(true)} />
+      <Header onOpenSettings={() => setShowSettings(true)} onOpenTunnel={handleOpenTunnel} isLocalhost={isLocalAccess} />
 
       <main className="flex flex-1 overflow-hidden relative text-slate-900">
         <VersionTimeline versions={versions} currentIndex={currentIndex} onSelect={setCurrentIndex} />
@@ -1140,6 +1236,97 @@ const App = () => {
             <div className="p-6 bg-slate-50 border-t flex justify-end gap-3 shrink-0">
               <button onClick={() => setSettings(DEFAULT_SETTINGS)} className="px-6 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 uppercase tracking-widest transition-colors">Restore Defaults</button>
               <button onClick={() => setShowSettings(false)} className="px-8 py-2 bg-indigo-600 text-white rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition-all">Apply Settings</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showTunnel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm text-slate-900">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl border flex flex-col">
+            <div className="flex items-center justify-between p-6 border-b shrink-0">
+              <div className="flex items-center gap-3">
+                <Globe className="w-5 h-5 text-indigo-600" />
+                <h3 className="text-lg font-bold text-slate-900">Share Publicly</h3>
+              </div>
+              <button onClick={() => setShowTunnel(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-500"><X /></button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {tunnelInfo.error && (
+                <p className="text-sm text-red-600 bg-red-50 rounded-xl p-3">{tunnelInfo.error}</p>
+              )}
+
+              {!tunnelInfo.isRunning && !tunnelInfo.isLoading && (
+                <div className="space-y-3">
+                  <p className="text-sm text-slate-600">
+                    Expose this app publicly via a secure tunnel using{' '}
+                    <span className="font-mono text-xs bg-slate-100 px-1 rounded">localhost.run</span>.
+                  </p>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-slate-600">Auto-close after</label>
+                    <select
+                      value={tunnelDuration}
+                      onChange={e => setTunnelDuration(Number(e.target.value))}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value={0}>Indefinite</option>
+                      <option value={15}>15 minutes</option>
+                      <option value={30}>30 minutes</option>
+                      <option value={60}>1 hour</option>
+                      <option value={120}>2 hours</option>
+                      <option value={240}>4 hours</option>
+                    </select>
+                  </div>
+                  <button
+                    onClick={handleStartTunnel}
+                    className="w-full py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all"
+                  >
+                    Start Tunnel
+                  </button>
+                </div>
+              )}
+
+              {tunnelInfo.isLoading && (
+                <div className="text-center py-6 space-y-2">
+                  <RefreshCcw className="w-6 h-6 text-indigo-500 animate-spin mx-auto" />
+                  <p className="text-sm text-slate-500">Establishing tunnel…</p>
+                </div>
+              )}
+
+              {tunnelInfo.isRunning && tunnelInfo.url && (
+                <div className="space-y-4">
+                  <div className="bg-slate-50 rounded-xl p-3 border">
+                    <p className="text-xs text-slate-500 font-medium mb-1">Public URL</p>
+                    <a
+                      href={tunnelInfo.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-sm text-indigo-600 font-mono break-all hover:underline"
+                    >
+                      {tunnelInfo.url}
+                    </a>
+                  </div>
+                  {tunnelInfo.qrCode && (
+                    <div className="flex justify-center">
+                      <img src={tunnelInfo.qrCode} alt="QR Code" className="w-40 h-40 rounded-lg border" />
+                    </div>
+                  )}
+                  {tunnelInfo.expiresAt ? (
+                    <p className="text-xs text-center text-slate-500">
+                      Closes in <CountdownTimer expiresAt={tunnelInfo.expiresAt} onExpire={handleStopTunnel} />
+                    </p>
+                  ) : (
+                    <p className="text-xs text-center text-slate-400">Running indefinitely</p>
+                  )}
+                  <button
+                    onClick={handleStopTunnel}
+                    className="w-full py-2.5 bg-red-50 text-red-600 border border-red-200 rounded-xl font-bold hover:bg-red-100 transition-all"
+                  >
+                    Stop Tunnel
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

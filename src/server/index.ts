@@ -10,6 +10,7 @@ import { coverLetterRoute } from './routes/coverLetter.js';
 import { interviewPrepRoute } from './routes/interviewPrep.js';
 import { parseJobUrlRoute } from './routes/parseJobUrl.js';
 import { linkedinRoute } from './routes/linkedin.js';
+import { tunnelRoute } from './routes/tunnel.js';
 
 const app = new Hono();
 
@@ -28,6 +29,7 @@ app.route('/api', coverLetterRoute);
 app.route('/api', interviewPrepRoute);
 app.route('/api', parseJobUrlRoute);
 app.route('/api', linkedinRoute);
+app.route('/api', tunnelRoute);
 
 app.onError((err, c) => {
   console.error('[Server Error]', err.message);
