@@ -72,7 +72,7 @@ tunnelRoute.post('/tunnel/start', async (c) => {
   const args = [
     '-o', 'ServerAliveInterval=60',
     '-o', 'StrictHostKeyChecking=accept-new',
-    '-R', '80:localhost:3000',
+    '-R', `80:localhost:${process.env.PORT ?? '3000'}`,
     'localhost.run',
   ];
 

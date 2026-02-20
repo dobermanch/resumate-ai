@@ -1,0 +1,13 @@
+node_modules
+src/client/node_modules
+src/server/node_modules
+src/client/dist
+src/server/dist
+.devcontainer
+prototype
+.git
+.gitignore
+.env
+.env.local
+src/client/.env.local
+docker-compose.yml
