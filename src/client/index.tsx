@@ -483,6 +483,13 @@ const App = () => {
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
 
   useEffect(() => {
+    // Fade out the initial HTML loading screen once React has rendered
+    const loadingEl = document.getElementById('app-loading');
+    if (loadingEl) {
+      loadingEl.classList.add('fade-out');
+      setTimeout(() => loadingEl.remove(), 350);
+    }
+
     async function init() {
       const prompts = await loadAllPrompts();
 

@@ -38,6 +38,70 @@
     <link rel="stylesheet" href="/index.css">
 </head>
 <body>
+    <style>
+        @keyframes cv-spin {
+            to { transform: rotate(360deg); }
+        }
+        @keyframes cv-dot {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-6px); opacity: 1; }
+        }
+        #app-loading { transition: opacity 0.35s ease; }
+        #app-loading.fade-out { opacity: 0; pointer-events: none; }
+    </style>
+
+    <div id="app-loading" style="
+        position: fixed; inset: 0; z-index: 9999;
+        background: #f8fafc;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 20px;
+    ">
+        <!-- Spinning ring around a document icon -->
+        <div style="position: relative; width: 72px; height: 72px;">
+            <svg viewBox="0 0 72 72" width="72" height="72"
+                 style="position: absolute; inset: 0; animation: cv-spin 1.1s linear infinite;">
+                <circle cx="36" cy="36" r="32"
+                        fill="none" stroke="#e2e8f0" stroke-width="4"/>
+                <path d="M36 4 A32 32 0 0 1 68 36"
+                      fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+            <svg viewBox="0 0 40 40" width="40" height="40"
+                 style="position: absolute; top: 16px; left: 16px;">
+                <rect x="6" y="2" width="22" height="28" rx="2" fill="#f1f5f9"/>
+                <path d="M6 10 L28 10" stroke="#cbd5e1" stroke-width="1.5"/>
+                <path d="M10 15 L24 15" stroke="#cbd5e1" stroke-width="1.5"/>
+                <path d="M10 19 L22 19" stroke="#cbd5e1" stroke-width="1.5"/>
+                <path d="M10 23 L20 23" stroke="#cbd5e1" stroke-width="1.5"/>
+                <!-- sparkle -->
+                <path d="M29 4 L30 7 L33 8 L30 9 L29 12 L28 9 L25 8 L28 7 Z"
+                      fill="#6366f1"/>
+            </svg>
+        </div>
+
+        <!-- App name -->
+        <div style="text-align: center;">
+            <div style="font-family: Inter, sans-serif; font-size: 1.25rem;
+                        font-weight: 600; color: #0f172a; letter-spacing: -0.01em;">
+                ResuMate AI
+            </div>
+            <div style="font-family: Inter, sans-serif; font-size: 0.8rem;
+                        color: #94a3b8; margin-top: 2px;">
+                Professional Resume Workbench
+            </div>
+        </div>
+
+        <!-- Bouncing dots -->
+        <div style="display: flex; gap: 6px; align-items: center;">
+            <span style="width: 7px; height: 7px; border-radius: 50%; background: #6366f1;
+                         animation: cv-dot 1.2s ease-in-out infinite;"></span>
+            <span style="width: 7px; height: 7px; border-radius: 50%; background: #6366f1;
+                         animation: cv-dot 1.2s ease-in-out 0.2s infinite;"></span>
+            <span style="width: 7px; height: 7px; border-radius: 50%; background: #6366f1;
+                         animation: cv-dot 1.2s ease-in-out 0.4s infinite;"></span>
+        </div>
+    </div>
+
     <div id="root"></div>
     <script type="module" src="./index.tsx"></script>
 </body>
