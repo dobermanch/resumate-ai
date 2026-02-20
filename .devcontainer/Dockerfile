@@ -7,15 +7,12 @@ RUN apt-get update && \
     apt-get install -y rsync git curl ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
+# Install Node.js 20.x via NodeSource
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
+
 # Install uv
 ADD https://astral.sh/uv/install.sh /uv-installer.sh
 RUN sh /uv-installer.sh && rm /uv-installer.sh
 ENV PATH="/root/.local/bin/:$PATH"
-
-# Install Ollama
-# ADD curl -fsSL https://ollama.com/install.sh /ollama.sh
-# RUN sh /ollama.sh && rm /ollama.sh
-
-# Install Python packages
-COPY requirements.txt requirements.txt
-RUN uv pip install --system --no-cache -r requirements.txt

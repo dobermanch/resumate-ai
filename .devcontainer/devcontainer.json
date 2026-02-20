@@ -1,10 +1,10 @@
 {
-  "name": "CV Wizard",
+  "name": "ResuMate AI",
   "build": {
     "context": "..",
     "dockerfile": "Dockerfile"
   },
-  "runArgs": ["--name", "CV-Wizard"],
+  "runArgs": ["--name", "ResuMate-AI"],
   "customizations": {
     "vscode": {
       "extensions": [
@@ -13,7 +13,11 @@
         "ms-toolsai.jupyter",
         "yahyabatulu.vscode-markdown-alert",
         "tomoki1207.pdf",
-        "mechatroner.rainbow-csv"
+        "mechatroner.rainbow-csv",
+        "msjsdiag.vscode-react-native",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-typescript-next"
       ]
     }
   }

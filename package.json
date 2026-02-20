@@ -1,5 +1,5 @@
 {
-  "name": "cv-wizard",
+  "name": "resumate-ai",
   "private": true,
   "scripts": {
     "dev": "concurrently -n server,client -c cyan,magenta \"npm run dev --prefix src/server\" \"npm run dev --prefix src/client\"",
