@@ -16,6 +16,27 @@
 - **Public Sharing** — Expose the app via SSH tunnel with a QR code (localhost.run)
 
 ---
+## Usage
+
+Use the pre-built image from GitHub Container Registry instead of building locally. Replace `latest` with a specific release tag (for example `v0.0.1`) when you want a pinned release.
+
+Pull the image:
+
+```bash
+docker pull ghcr.io/dobermanch/resumate-ai:latest
+```
+
+Run the container (example):
+
+```bash
+docker run --rm -p 4000:4000 \
+  -e OPENAI_API_KEY=sk-...your-key-here... \
+  ghcr.io/dobermanch/resumate-ai:latest
+```
+
+Then open http://localhost:4000 in your browser.
+
+---
 
 ## Prerequisites
 
