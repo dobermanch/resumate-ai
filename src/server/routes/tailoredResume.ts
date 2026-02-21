@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
-import { generateJson, replacePlaceholders } from '../lib/openai.js';
-import { TAILORED_RESUME_SCHEMA } from '../lib/schemas.js';
+import { generateJson, replacePlaceholders } from '../utils/openai.js';
+import { TAILORED_RESUME_SCHEMA } from '../utils/schemas.js';
 import type { TailoredResumeRequest, TailoredResumeResponse } from '../types.js';
 
 export const tailoredResumeRoute = new Hono();

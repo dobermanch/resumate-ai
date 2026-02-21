@@ -13,7 +13,7 @@
   },
   "include": [
     "*.ts",
-    "lib/**/*.ts",
+    "utils/**/*.ts",
     "routes/**/*.ts"
   ],
   "exclude": ["node_modules", "dist"]

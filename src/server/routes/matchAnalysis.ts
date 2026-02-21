@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
-import { generateJson, replacePlaceholders } from '../lib/openai.js';
-import { MATCH_ANALYSIS_SCHEMA } from '../lib/schemas.js';
+import { generateJson, replacePlaceholders } from '../utils/openai.js';
+import { MATCH_ANALYSIS_SCHEMA } from '../utils/schemas.js';
 import type { MatchAnalysisRequest, MatchAnalysisResponse } from '../types.js';
 
 export const matchAnalysisRoute = new Hono();

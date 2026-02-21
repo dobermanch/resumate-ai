@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { generateText, replacePlaceholders } from '../lib/openai.js';
+import { generateText, replacePlaceholders } from '../utils/openai.js';
 import type { CoverLetterRequest, CoverLetterResponse } from '../types.js';
 
 export const coverLetterRoute = new Hono();

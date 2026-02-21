@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
-import { generateJson, replacePlaceholders } from '../lib/openai.js';
-import { INTERVIEW_PREP_SCHEMA } from '../lib/schemas.js';
+import { generateJson, replacePlaceholders } from '../utils/openai.js';
+import { INTERVIEW_PREP_SCHEMA } from '../utils/schemas.js';
 import type { InterviewPrepRequest, InterviewPrepResponse } from '../types.js';
 
 export const interviewPrepRoute = new Hono();
