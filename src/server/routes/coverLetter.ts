@@ -19,11 +19,16 @@ coverLetterRoute.post('/cover-letter', async (c) => {
     jobText: body.jobText,
   });
 
-  const coverLetter = await generateText({
-    model: body.model,
-    systemPrompt: body.systemPrompt,
-    userPrompt,
-  });
+  try {
+    const coverLetter = await generateText({
+      model: body.model,
+      systemPrompt: body.systemPrompt,
+      userPrompt,
+    });
 
-  return c.json({ coverLetter } satisfies CoverLetterResponse);
+    return c.json({ coverLetter } satisfies CoverLetterResponse);
+  } catch (error) {
+    console.error('[cover-letter] Error:', error);
+    return c.json({ error: error instanceof Error ? error.message : String(error) }, 500);
+  }
 });

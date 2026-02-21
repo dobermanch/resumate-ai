@@ -32,10 +32,19 @@ function waitForUrl(proc: ChildProcess, timeoutMs: number): Promise<string | nul
       }
     };
 
-    proc.stdout?.on('data', onData);
-    proc.stderr?.on('data', onData);
+    proc.stdout?.on('data', (chunk: Buffer) => {
+      const text = chunk.toString().trimEnd();
+      onData(chunk);
+    });
 
-    proc.on('exit', () => {
+    proc.stderr?.on('data', (chunk: Buffer) => {
+      const text = chunk.toString().trimEnd();
+      if (text) console.log(`[tunnel] ssh stderr: ${text}`);
+      onData(chunk);
+    });
+
+    proc.on('exit', (code, signal) => {
+      console.log(`[tunnel] ssh process exited code=${code} signal=${signal}`);
       if (!resolved) {
         resolved = true;
         resolve(null);
@@ -44,6 +53,7 @@ function waitForUrl(proc: ChildProcess, timeoutMs: number): Promise<string | nul
 
     setTimeout(() => {
       if (!resolved) {
+        console.log(`[tunnel] timed out after ${timeoutMs}ms waiting for URL`);
         resolved = true;
         resolve(null);
       }
@@ -55,11 +65,13 @@ export const tunnelRoute = new Hono();
 
 tunnelRoute.post('/tunnel/start', async (c) => {
   if (isAlive() && tunnelUrl) {
+    console.log(`[tunnel] Reusing existing tunnel: ${tunnelUrl}`);
     return c.json({ url: tunnelUrl, ...(tunnelExpiresAt ? { expiresAt: tunnelExpiresAt } : {}) });
   }
 
   // Kill any dead/stale process reference
   if (tunnelProcess) {
+    console.log('[tunnel] Killing stale tunnel process');
     tunnelProcess.kill('SIGTERM');
     tunnelProcess = null;
     tunnelUrl = null;
@@ -76,7 +88,9 @@ tunnelRoute.post('/tunnel/start', async (c) => {
     'localhost.run',
   ];
 
+  console.log(`[tunnel] Spawning ssh with args: ${args.join(' ')}`);
   const proc = spawn('ssh', args, { stdio: ['ignore', 'pipe', 'pipe'] });
+  console.log(`[tunnel] ssh pid=${proc.pid}`);
   tunnelProcess = proc;
 
   proc.on('exit', () => {
@@ -90,6 +104,7 @@ tunnelRoute.post('/tunnel/start', async (c) => {
   const url = await waitForUrl(proc, 30_000);
 
   if (!url) {
+    console.error('[tunnel] Failed to get tunnel URL — killing process');
     if (tunnelProcess === proc) {
       proc.kill('SIGTERM');
       tunnelProcess = null;
@@ -97,11 +112,13 @@ tunnelRoute.post('/tunnel/start', async (c) => {
     return c.json({ error: 'Failed to establish tunnel — no URL received within 30s' }, 500);
   }
 
+  console.log(`[tunnel] Tunnel established: ${url}`);
   tunnelUrl = url;
 
   if (durationMs) {
     tunnelExpiresAt = Date.now() + durationMs;
     tunnelTimeoutHandle = setTimeout(() => {
+      console.log('[tunnel] Duration expired — stopping tunnel');
       if (tunnelProcess) {
         tunnelProcess.kill('SIGTERM');
         tunnelProcess = null;
@@ -117,6 +134,7 @@ tunnelRoute.post('/tunnel/start', async (c) => {
 
 tunnelRoute.post('/tunnel/stop', async (c) => {
   if (tunnelProcess) {
+    console.log('[tunnel] Stopping tunnel on request');
     tunnelProcess.kill('SIGTERM');
     tunnelProcess = null;
     tunnelUrl = null;

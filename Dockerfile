@@ -19,7 +19,10 @@ RUN npm run build
 # ---- Stage 3: Production runtime ----
 FROM node:20-alpine AS production
 # openssh-client required for the tunnel feature (localhost.run)
-RUN apk add --no-cache openssh-client
+RUN apk add --no-cache openssh-client && \
+    mkdir -p /root/.ssh && \
+    chmod 700 /root/.ssh && \
+    ssh-keygen -t ed25519 -f /root/.ssh/id_ed25519 -N '' -q
 WORKDIR /app
 # Server compiled JS and runtime dependencies
 COPY --from=server-builder /app/dist/ ./dist/

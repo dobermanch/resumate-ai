@@ -19,10 +19,12 @@ parseJobUrlRoute.post('/parse-job-url', async (c) => {
   try {
     const response = await fetch(body.url);
     if (!response.ok) {
+      console.error(`[parse-job-url] Fetch failed: ${response.status} ${response.statusText}`);
       return c.json({ error: `Failed to fetch URL: ${response.status} ${response.statusText}` }, 400);
     }
     pageContent = await response.text();
   } catch (err) {
+    console.error('[parse-job-url] Fetch error:', err);
     return c.json({ error: `Failed to fetch URL: ${err instanceof Error ? err.message : String(err)}` }, 400);
   }
 
@@ -32,11 +34,16 @@ parseJobUrlRoute.post('/parse-job-url', async (c) => {
     input: pageContent,
   });
 
-  const jobText = await generateText({
-    model: body.model,
-    systemPrompt: body.systemPrompt,
-    userPrompt,
-  });
+  try {
+    const jobText = await generateText({
+      model: body.model,
+      systemPrompt: body.systemPrompt,
+      userPrompt,
+    });
 
-  return c.json({ jobText } satisfies ParseJobUrlResponse);
+    return c.json({ jobText } satisfies ParseJobUrlResponse);
+  } catch (error) {
+    console.error('[parse-job-url] Error:', error);
+    return c.json({ error: error instanceof Error ? error.message : String(error) }, 500);
+  }
 });

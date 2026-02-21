@@ -19,13 +19,18 @@ linkedinRoute.post('/linkedin-details', async (c) => {
     resumeText: body.resumeText,
   });
 
-  const raw = await generateJson({
-    model: body.model,
-    systemPrompt: body.systemPrompt,
-    userPrompt,
-    schemaDescription: LINKEDIN_RESUME_SCHEMA,
-  });
+  try {
+    const raw = await generateJson({
+      model: body.model,
+      systemPrompt: body.systemPrompt,
+      userPrompt,
+      schemaDescription: LINKEDIN_RESUME_SCHEMA,
+    });
 
-  const result = JSON.parse(raw) as LinkedinResponse;
-  return c.json(result);
+    const result = JSON.parse(raw) as LinkedinResponse;
+    return c.json(result);
+  } catch (error) {
+    console.error('[linkedin-details] Error:', error);
+    return c.json({ error: error instanceof Error ? error.message : String(error) }, 500);
+  }
 });

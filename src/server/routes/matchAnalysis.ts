@@ -30,8 +30,8 @@ matchAnalysisRoute.post('/match-analysis', async (c) => {
 
     const result = JSON.parse(raw) as MatchAnalysisResponse;
     return c.json(result);
-  }
-  catch(error){
-    return c.json({ error: error }, 400);
+  } catch (error) {
+    console.error('[match-analysis] Error:', error);
+    return c.json({ error: error instanceof Error ? error.message : String(error) }, 500);
   }
 });

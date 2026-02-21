@@ -29,18 +29,27 @@ export async function generateJson(params: {
   userPrompt: string;
   schemaDescription: string;
 }): Promise<string> {
+  const model = params.model ?? DEFAULT_MODEL;
   const systemWithSchema = `${params.systemPrompt}\n\n${params.schemaDescription}`;
+  const t0 = Date.now();
+  console.log(`[openai] generateJson model=${model}`);
 
-  const response = await client.chat.completions.create({
-    model: params.model ?? DEFAULT_MODEL,
-    response_format: { type: 'json_object' },
-    messages: [
-      { role: 'system', content: systemWithSchema },
-      { role: 'user', content: params.userPrompt },
-    ],
-  });
-
-  return response.choices[0]?.message?.content ?? '{}';
+  try {
+    const response = await client.chat.completions.create({
+      model,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: systemWithSchema },
+        { role: 'user', content: params.userPrompt },
+      ],
+    });
+    const content = response.choices[0]?.message?.content ?? '{}';
+    console.log(`[openai] generateJson done in ${Date.now() - t0}ms tokens=${response.usage?.total_tokens ?? '?'}`);
+    return content;
+  } catch (err) {
+    console.error(`[openai] generateJson error after ${Date.now() - t0}ms:`, err);
+    throw err;
+  }
 }
 
 /**
@@ -51,13 +60,23 @@ export async function generateText(params: {
   systemPrompt: string;
   userPrompt: string;
 }): Promise<string> {
-  const response = await client.chat.completions.create({
-    model: params.model ?? DEFAULT_MODEL,
-    messages: [
-      { role: 'system', content: params.systemPrompt },
-      { role: 'user', content: params.userPrompt },
-    ],
-  });
+  const model = params.model ?? DEFAULT_MODEL;
+  const t0 = Date.now();
+  console.log(`[openai] generateText model=${model}`);
 
-  return response.choices[0]?.message?.content ?? '';
+  try {
+    const response = await client.chat.completions.create({
+      model,
+      messages: [
+        { role: 'system', content: params.systemPrompt },
+        { role: 'user', content: params.userPrompt },
+      ],
+    });
+    const content = response.choices[0]?.message?.content ?? '';
+    console.log(`[openai] generateText done in ${Date.now() - t0}ms tokens=${response.usage?.total_tokens ?? '?'}`);
+    return content;
+  } catch (err) {
+    console.error(`[openai] generateText error after ${Date.now() - t0}ms:`, err);
+    throw err;
+  }
 }

@@ -21,13 +21,18 @@ tailoredResumeRoute.post('/tailored-resume', async (c) => {
     improvements: body.improvements ?? 'None provided',
   });
 
-  const raw = await generateJson({
-    model: body.model,
-    systemPrompt: body.systemPrompt,
-    userPrompt,
-    schemaDescription: TAILORED_RESUME_SCHEMA,
-  });
+  try {
+    const raw = await generateJson({
+      model: body.model,
+      systemPrompt: body.systemPrompt,
+      userPrompt,
+      schemaDescription: TAILORED_RESUME_SCHEMA,
+    });
 
-  const result = JSON.parse(raw) as TailoredResumeResponse;
-  return c.json(result);
+    const result = JSON.parse(raw) as TailoredResumeResponse;
+    return c.json(result);
+  } catch (error) {
+    console.error('[tailored-resume] Error:', error);
+    return c.json({ error: error instanceof Error ? error.message : String(error) }, 500);
+  }
 });
