@@ -1,5 +1,7 @@
 # ResuMate AI
 
+[![Build](https://github.com/OWNER/REPO/actions/workflows/build.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/build.yml)
+
 **AI-powered job application assistant.** Upload your resume and a job description — ResuMate AI tailors your resume, writes your cover letter, scores your fit, preps your interview, and drafts your LinkedIn profile. All in one tool.
 
 ---

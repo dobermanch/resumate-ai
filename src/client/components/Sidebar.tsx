@@ -161,7 +161,13 @@ export const Sidebar = ({ resumeText, setResumeText, jobText, setJobText, onFetc
                 <button onClick={() => setResumeText("")} className="text-[10px] text-red-500 hover:underline font-bold">Clear</button>
               </div>
             </div>
-            <label className="text-xs text-red-400 tracking-wider">IMPORTANT: Before generating anything, remove personal details from your resume (name, phone, email, links, etc.).</label>
+
+            {resumeText != "" ? (
+              <label className="text-xs text-red-400 tracking-wider">IMPORTANT: Before generating anything, remove personal details from your resume (name, phone, email, links, etc.).</label>
+            ) : ( 
+              <div></div> 
+            )}
+            
 
             <textarea
               className="flex-1 w-full p-4 text-sm bg-slate-50 text-slate-900 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-none font-serif leading-relaxed placeholder:text-slate-300 shadow-inner"
