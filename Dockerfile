@@ -1,5 +1,7 @@
 # ---- Stage 1: Build client ----
 FROM node:20-alpine AS client-builder
+ARG APP_VERSION
+ENV APP_VERSION=${APP_VERSION}
 WORKDIR /app
 COPY src/client/package*.json ./
 RUN npm ci
