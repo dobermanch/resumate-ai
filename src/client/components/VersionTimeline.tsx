@@ -1,4 +1,5 @@
 import React from 'react';
+declare const __APP_VERSION__: string;
 import { History } from 'lucide-react';
 import type { ResumeVersion } from '@/types';
 
@@ -9,7 +10,7 @@ interface VersionTimelineProps {
 }
 
 export const VersionTimeline = ({ versions, currentIndex, onSelect }: VersionTimelineProps) => (
-  <nav className="w-16 border-r bg-slate-900 flex flex-col items-center py-6 gap-6 shrink-0 overflow-y-auto scrollbar-hide">
+  <nav className="w-16 border-r bg-slate-900 flex flex-col items-center py-6 gap-6 shrink-0 overflow-y-hide scrollbar-hide">
     <div className="text-slate-500 mb-2 shrink-0">
       <History className="w-5 h-5" />
     </div>
@@ -33,6 +34,19 @@ export const VersionTimeline = ({ versions, currentIndex, onSelect }: VersionTim
           </div>
         </button>
       ))}
+    </div>
+    <div className="mt-auto pb-0 text-[12px] text-slate-400 select-none text-center">
+        <div>v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0'}</div>
+        <div className="mt-1">
+          <a
+            href="https://github.com/dobermanch/resumate-ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-indigo-400"
+          >
+            GitHub
+          </a>
+        </div>
     </div>
   </nav>
 );
