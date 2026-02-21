@@ -1,6 +1,6 @@
 # ResuMate AI
 
-[![Build](https://github.com/dobermanch/resumate-ai/actions/workflows/build.yml/badge.svg)](https://github.com/dobermanch/resumate-ai/actions/workflows/build.yml)
+[![Build](https://github.com/dobermanch/resumate-ai/actions/workflows/build.yml/badge.svg)](https://github.com/dobermanch/resumate-ai/actions/workflows/build.yml) [![Release](https://img.shields.io/github/v/release/dobermanch/resumate-ai?label=release&logo=github)](https://github.com/dobermanch/resumate-ai/releases/latest)
 
 **AI-powered job application assistant.** Upload your resume and a job description — ResuMate AI tailors your resume, writes your cover letter, scores your fit, preps your interview, and drafts your LinkedIn profile. All in one tool.
 

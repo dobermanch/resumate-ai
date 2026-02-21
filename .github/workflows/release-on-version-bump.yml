@@ -1,4 +1,4 @@
-name: Create Tag from package.json
+name: Release on version bump
 
 permissions:
   contents: write
