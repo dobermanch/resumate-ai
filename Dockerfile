@@ -2,6 +2,7 @@
 FROM node:20-alpine AS client-builder
 ARG APP_VERSION
 ENV APP_VERSION=${APP_VERSION}
+
 WORKDIR /app
 COPY src/client/package*.json ./
 RUN npm ci
@@ -33,5 +34,6 @@ COPY --from=client-builder /app/dist/ ./public/
 
 EXPOSE 4000
 ENV NODE_ENV=production
+ENV PORT=4000
 
 CMD ["node", "dist/index.js"]
