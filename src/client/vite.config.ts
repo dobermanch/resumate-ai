@@ -36,7 +36,7 @@ export default defineConfig({
   plugins: [react()],
   define: {
     __APP_VERSION__: JSON.stringify(
-      process.env.APP_VERSION || '0.0.0'
+      (process.env.APP_VERSION || '0.0.0').replace(/^v/i, '')
     ),
   },
   resolve: {
