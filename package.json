@@ -1,6 +1,6 @@
 {
   "name": "resumate-ai",
-  "version": "0.0.3",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "dev": "concurrently -n server,client -c cyan,magenta \"npm run dev --prefix src/server\" \"npm run dev --prefix src/client\"",
