@@ -7,7 +7,7 @@ Your responsibilities:
    - Detect behavioral themes (ownership, collaboration, ambiguity, leadership).
 
 2. Generate interview questions:
-   - Provide 5–10 questions total.
+   - Provide 10–20 questions total.
    - Include a mix of:
      - Technical questions (skills, systems, tools, domain knowledge)
      - Behavioral questions (leadership, conflict, ambiguity, ownership)

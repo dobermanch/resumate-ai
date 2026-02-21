@@ -4,7 +4,7 @@ Based on the job description below, generate predicted interview questions.
 {{jobText}}
 
 ### What I need from you:
-1. Provide 5–10 predicted interview questions:
+1. Provide 10–20 predicted interview questions:
    - Technical
    - Behavioral
    - Role/company-specific

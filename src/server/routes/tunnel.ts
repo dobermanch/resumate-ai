@@ -66,7 +66,7 @@ tunnelRoute.post('/tunnel/start', async (c) => {
     clearTunnelTimeout();
   }
 
-  const body = await c.req.json<{ duration?: number }>().catch(() => ({}));
+  const body = (await c.req.json().catch(() => ({}))) as { duration?: number };
   const durationMs = body.duration && body.duration > 0 ? body.duration * 60 * 1000 : null;
 
   const args = [

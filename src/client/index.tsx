@@ -288,7 +288,7 @@ const App = () => {
                           actionLabel="Draft Cover Letter"
                           actionIcon={<Wand2 className="w-4 h-4" />}
                           onAction={handleGenerateLetter}
-                          isLoading={isGenerating}
+                          disabled={isGenerating || !resumeText || !jobText}
                         />
                       ) : (
                         <div className="max-w-2xl mx-auto whitespace-pre-wrap text-lg leading-loose text-slate-800">
@@ -321,7 +321,7 @@ const App = () => {
                           actionLabel="Generate Prep Cards"
                           actionIcon={<RefreshCcw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />}
                           onAction={handleGeneratePrep}
-                          isLoading={isGenerating}
+                          disabled={isGenerating || jobText == ""}
                         />
                       </div>
                     ) : (
@@ -372,7 +372,7 @@ const App = () => {
                           actionLabel="Draft Profile Content"
                           actionIcon={<Wand2 className="w-4 h-4" />}
                           onAction={handleGenerateLinkedin}
-                          isLoading={isGenerating}
+                          disabled={isGenerating}
                         />
                       ) : (
                         <div className="max-w-2xl mx-auto space-y-8 text-slate-800">
