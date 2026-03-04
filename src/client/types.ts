@@ -16,9 +16,12 @@ export interface JobSession {
   jobText: string;
   versions: ResumeVersion[];
   currentIndex: number;
-  coverLetter: string;
-  linkedinProfile: LinkedinResult | null;
-  interviewPrep: InterviewItem[];
+  coverLetters: string[];
+  coverLetterIndex: number;
+  linkedinProfiles: (LinkedinResult | null)[];
+  linkedinProfileIndex: number;
+  interviewPreps: InterviewItem[][];
+  interviewPrepIndex: number;
   hasInitialAnalysisStarted: boolean;
 }
 

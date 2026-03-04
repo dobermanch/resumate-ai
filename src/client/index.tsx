@@ -32,9 +32,12 @@ const App = () => {
   const [jobText, setJobText] = useState("");
   const [versions, setVersions] = useState<ResumeVersion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
-  const [coverLetter, setCoverLetter] = useState("");
-  const [linkedinProfile, setLinkedinProfile] = useState<LinkedinResult | null>(null);
-  const [interviewPrep, setInterviewPrep] = useState<InterviewItem[]>([]);
+  const [coverLetters, setCoverLetters] = useState<string[]>([]);
+  const [coverLetterIndex, setCoverLetterIndex] = useState(-1);
+  const [linkedinProfiles, setLinkedinProfiles] = useState<(LinkedinResult | null)[]>([]);
+  const [linkedinProfileIndex, setLinkedinProfileIndex] = useState(-1);
+  const [interviewPreps, setInterviewPreps] = useState<InterviewItem[][]>([]);
+  const [interviewPrepIndex, setInterviewPrepIndex] = useState(-1);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState<'resume' | 'letter' | 'interview' | 'analysis' | 'linkedin'>('resume');
   const [showSettings, setShowSettings] = useState(false);
@@ -93,20 +96,23 @@ const App = () => {
     const ts = Date.now();
     const newId = `job-${ts}`;
     const currentId = activeJobId ?? `job-${ts - 1}`;
-    const snapshot: JobSession = { id: currentId, jobText, versions, currentIndex, coverLetter, linkedinProfile, interviewPrep, hasInitialAnalysisStarted };
+    const snapshot: JobSession = { id: currentId, jobText, versions, currentIndex, coverLetters, coverLetterIndex, linkedinProfiles, linkedinProfileIndex, interviewPreps, interviewPrepIndex, hasInitialAnalysisStarted };
     const v0: ResumeVersion[] = resumeText
       ? [{ id: 'v0', timestamp: ts, tailoredResume: resumeText, analysis: { score: 0, gaps: [], improvements: [], strengths: [] } }]
       : [];
-    const newJob: JobSession = { id: newId, jobText: '', versions: v0, currentIndex: v0.length > 0 ? 0 : -1, coverLetter: '', linkedinProfile: null, interviewPrep: [], hasInitialAnalysisStarted: false };
+    const newJob: JobSession = { id: newId, url: '', jobText: '', versions: v0, currentIndex: v0.length > 0 ? 0 : -1, coverLetters: [], coverLetterIndex: -1, linkedinProfiles: [], linkedinProfileIndex: -1, interviewPreps: [], interviewPrepIndex: -1, hasInitialAnalysisStarted: false };
     setAllJobs(prev => {
       if (activeJobId) return [...prev.map(j => j.id === activeJobId ? snapshot : j), newJob];
       return [snapshot, newJob];
     });
     setActiveJobId(newId);
     setJobText('');
-    setCoverLetter('');
-    setLinkedinProfile(null);
-    setInterviewPrep([]);
+    setCoverLetters([]);
+    setCoverLetterIndex(-1);
+    setLinkedinProfiles([]);
+    setLinkedinProfileIndex(-1);
+    setInterviewPreps([]);
+    setInterviewPrepIndex(-1);
     setHasInitialAnalysisStarted(false);
     setVersions(v0);
     setCurrentIndex(v0.length > 0 ? 0 : -1);
@@ -117,16 +123,19 @@ const App = () => {
     const target = allJobs.find(j => j.id === targetId);
     if (!target) return;
     if (activeJobId) {
-      const snapshot: JobSession = { id: activeJobId, jobText, versions, currentIndex, coverLetter, linkedinProfile, interviewPrep, hasInitialAnalysisStarted };
+      const snapshot: JobSession = { id: activeJobId, url: '', jobText, versions, currentIndex, coverLetters, coverLetterIndex, linkedinProfiles, linkedinProfileIndex, interviewPreps, interviewPrepIndex, hasInitialAnalysisStarted };
       setAllJobs(prev => prev.map(j => j.id === activeJobId ? snapshot : j));
     }
     setActiveJobId(targetId);
     setJobText(target.jobText);
     setVersions(target.versions);
     setCurrentIndex(target.currentIndex);
-    setCoverLetter(target.coverLetter);
-    setLinkedinProfile(target.linkedinProfile);
-    setInterviewPrep(target.interviewPrep);
+    setCoverLetters(target.coverLetters);
+    setCoverLetterIndex(target.coverLetterIndex);
+    setLinkedinProfiles(target.linkedinProfiles);
+    setLinkedinProfileIndex(target.linkedinProfileIndex);
+    setInterviewPreps(target.interviewPreps);
+    setInterviewPrepIndex(target.interviewPrepIndex);
     setHasInitialAnalysisStarted(target.hasInitialAnalysisStarted);
   };
 
@@ -144,16 +153,26 @@ const App = () => {
     versions,
     currentIndex,
     hasInitialAnalysisStarted,
+    coverLetters,
+    linkedinProfiles,
+    interviewPreps,
     setVersions,
     setCurrentIndex,
-    setCoverLetter,
-    setLinkedinProfile,
-    setInterviewPrep,
+    setCoverLetters,
+    setCoverLetterIndex,
+    setLinkedinProfiles,
+    setLinkedinProfileIndex,
+    setInterviewPreps,
+    setInterviewPrepIndex,
     setJobText,
     setIsGenerating,
     setHasInitialAnalysisStarted,
     setActiveTab,
   });
+
+  const coverLetter = coverLetters[coverLetterIndex] ?? "";
+  const linkedinProfile = linkedinProfiles[linkedinProfileIndex] ?? null;
+  const interviewPrep = interviewPreps[interviewPrepIndex] ?? [];
 
   const copyToClipboard = (text: string) => navigator.clipboard.writeText(text);
 
@@ -315,12 +334,25 @@ const App = () => {
                   <div className="space-y-4">
                     <SectionHeader
                       title="Cover Letter"
-                      actions={coverLetter ? (
-                        <ActionButtons
-                          onRegenerate={handleGenerateLetter}
-                          onCopy={() => copyToClipboard(coverLetter)}
-                          isGenerating={isGenerating}
-                        />
+                      actions={coverLetters.length > 0 ? (
+                        <div className="flex items-center gap-2">
+                          {coverLetters.length > 1 && (
+                            <select
+                              value={coverLetterIndex}
+                              onChange={e => setCoverLetterIndex(Number(e.target.value))}
+                              className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                            >
+                              {coverLetters.map((_, i) => (
+                                <option key={i} value={i}>Version {i + 1}</option>
+                              ))}
+                            </select>
+                          )}
+                          <ActionButtons
+                            onRegenerate={handleGenerateLetter}
+                            onCopy={() => copyToClipboard(coverLetter)}
+                            isGenerating={isGenerating}
+                          />
+                        </div>
                       ) : undefined}
                     />
                     <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-12 min-h-[500px] font-serif relative">
@@ -347,13 +379,26 @@ const App = () => {
                   <div className="space-y-6">
                     <SectionHeader
                       title="Interview Preparation"
-                      actions={interviewPrep.length > 0 ? (
-                        <ActionButtons
-                          onRegenerate={handleGeneratePrep}
-                          onCopy={() => copyToClipboard(interviewPrep.map(i => `Q: ${i.question}\nA: ${i.answer}`).join('\n\n'))}
-                          isGenerating={isGenerating}
-                          copyLabel="Copy All"
-                        />
+                      actions={interviewPreps.length > 0 ? (
+                        <div className="flex items-center gap-2">
+                          {interviewPreps.length > 1 && (
+                            <select
+                              value={interviewPrepIndex}
+                              onChange={e => setInterviewPrepIndex(Number(e.target.value))}
+                              className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                            >
+                              {interviewPreps.map((_, i) => (
+                                <option key={i} value={i}>Version {i + 1}</option>
+                              ))}
+                            </select>
+                          )}
+                          <ActionButtons
+                            onRegenerate={handleGeneratePrep}
+                            onCopy={() => copyToClipboard(interviewPrep.map(item => `Q: ${item.question}\nA: ${item.answer}`).join('\n\n'))}
+                            isGenerating={isGenerating}
+                            copyLabel="Copy All"
+                          />
+                        </div>
                       ) : undefined}
                     />
                     {interviewPrep.length === 0 ? (
@@ -399,12 +444,25 @@ const App = () => {
                   <div className="space-y-4">
                     <SectionHeader
                       title="LinkedIn Profile"
-                      actions={linkedinProfile ? (
-                        <ActionButtons
-                          onRegenerate={handleGenerateLinkedin}
-                          onCopy={() => linkedinProfile && copyToClipboard(`Headline\n${linkedinProfile.headline}\n\nSummary\n${linkedinProfile.summary}\n\nOpen To Work\n${linkedinProfile.openToWork}`)}
-                          isGenerating={isGenerating}
-                        />
+                      actions={linkedinProfiles.length > 0 ? (
+                        <div className="flex items-center gap-2">
+                          {linkedinProfiles.length > 1 && (
+                            <select
+                              value={linkedinProfileIndex}
+                              onChange={e => setLinkedinProfileIndex(Number(e.target.value))}
+                              className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                            >
+                              {linkedinProfiles.map((_, i) => (
+                                <option key={i} value={i}>Version {i + 1}</option>
+                              ))}
+                            </select>
+                          )}
+                          <ActionButtons
+                            onRegenerate={handleGenerateLinkedin}
+                            onCopy={() => linkedinProfile && copyToClipboard(`Headline\n${linkedinProfile.headline}\n\nSummary\n${linkedinProfile.summary}\n\nOpen To Work\n${linkedinProfile.openToWork}`)}
+                            isGenerating={isGenerating}
+                          />
+                        </div>
                       ) : undefined}
                     />
                     <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-12 min-h-[500px] font-serif relative">

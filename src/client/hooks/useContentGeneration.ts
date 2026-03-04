@@ -26,11 +26,17 @@ interface UseContentGenerationParams {
   versions: ResumeVersion[];
   currentIndex: number;
   hasInitialAnalysisStarted: boolean;
+  coverLetters: string[];
+  linkedinProfiles: (LinkedinResult | null)[];
+  interviewPreps: InterviewItem[][];
   setVersions: Dispatch<SetStateAction<ResumeVersion[]>>;
   setCurrentIndex: Dispatch<SetStateAction<number>>;
-  setCoverLetter: Dispatch<SetStateAction<string>>;
-  setLinkedinProfile: Dispatch<SetStateAction<LinkedinResult | null>>;
-  setInterviewPrep: Dispatch<SetStateAction<InterviewItem[]>>;
+  setCoverLetters: Dispatch<SetStateAction<string[]>>;
+  setCoverLetterIndex: Dispatch<SetStateAction<number>>;
+  setLinkedinProfiles: Dispatch<SetStateAction<(LinkedinResult | null)[]>>;
+  setLinkedinProfileIndex: Dispatch<SetStateAction<number>>;
+  setInterviewPreps: Dispatch<SetStateAction<InterviewItem[][]>>;
+  setInterviewPrepIndex: Dispatch<SetStateAction<number>>;
   setJobText: Dispatch<SetStateAction<string>>;
   setIsGenerating: Dispatch<SetStateAction<boolean>>;
   setHasInitialAnalysisStarted: Dispatch<SetStateAction<boolean>>;
@@ -43,11 +49,17 @@ export function useContentGeneration({
   settings,
   versions,
   currentIndex,
+  coverLetters,
+  linkedinProfiles,
+  interviewPreps,
   setVersions,
   setCurrentIndex,
-  setCoverLetter,
-  setLinkedinProfile,
-  setInterviewPrep,
+  setCoverLetters,
+  setCoverLetterIndex,
+  setLinkedinProfiles,
+  setLinkedinProfileIndex,
+  setInterviewPreps,
+  setInterviewPrepIndex,
   setJobText,
   setIsGenerating,
   setHasInitialAnalysisStarted,
@@ -158,7 +170,9 @@ export function useContentGeneration({
       });
       if (!res.ok) throw new Error(`API error: ${res.status}`);
       const result = await res.json();
-      setCoverLetter(result.coverLetter || "");
+      const newLetters = [...coverLetters, result.coverLetter || ""];
+      setCoverLetters(newLetters);
+      setCoverLetterIndex(newLetters.length - 1);
     } catch (e) {
       console.error(e);
     } finally {
@@ -183,7 +197,9 @@ export function useContentGeneration({
       });
       if (!res.ok) throw new Error(`API error: ${res.status}`);
       const result = await res.json();
-      setLinkedinProfile(result.linkedin || null);
+      const newProfiles = [...linkedinProfiles, result.linkedin || null];
+      setLinkedinProfiles(newProfiles);
+      setLinkedinProfileIndex(newProfiles.length - 1);
     } catch (e) {
       console.error(e);
     } finally {
@@ -215,7 +231,9 @@ export function useContentGeneration({
             answer: typeof q?.answer === 'string' ? q.answer : String(q?.answer ?? ''),
           }))
         : [];
-      setInterviewPrep(items);
+      const newPreps = [...interviewPreps, items];
+      setInterviewPreps(newPreps);
+      setInterviewPrepIndex(newPreps.length - 1);
     } catch (e) {
       console.error(e);
     } finally {
