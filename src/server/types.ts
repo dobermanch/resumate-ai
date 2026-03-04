@@ -70,3 +70,19 @@ export interface LinkedinResult {
 export interface LinkedinResponse {
   linkedin: LinkedinResult;
 }
+
+export interface WhyHereRequest extends BaseRequest {
+  resumeText: string;
+  jobText: string;
+  companyText: string;
+}
+
+export interface WhyHereItem {
+  angle: string;
+  explanation: string;
+  framework: string;
+}
+
+export interface WhyHereResponse {
+  whyHere: WhyHereItem[];
+}

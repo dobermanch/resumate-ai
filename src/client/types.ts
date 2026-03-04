@@ -23,12 +23,20 @@ export interface JobSession {
   linkedinProfileIndex: number;
   interviewPreps: InterviewItem[][];
   interviewPrepIndex: number;
+  whyHereAnswers: WhyHereItem[][];
+  whyHereIndex: number;
   hasInitialAnalysisStarted: boolean;
 }
 
 export interface InterviewItem {
   question: string;
   answer: string;
+}
+
+export interface WhyHereItem {
+  angle: string;
+  explanation: string;
+  framework: string;
 }
 
 export interface LinkedinResult {
@@ -52,6 +60,7 @@ export interface AppSettings {
     matchAnalysis: PromptConfig;
     jobParsing: PromptConfig;
     linkedin: PromptConfig;
+    whyHere: PromptConfig;
   };
 }
 

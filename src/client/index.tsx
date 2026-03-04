@@ -12,7 +12,7 @@ import {
   Cpu,
 } from 'lucide-react';
 
-import type { AppSettings, ResumeVersion, LinkedinResult, InterviewItem, TunnelInfo, JobSession } from '@/types';
+import type { AppSettings, ResumeVersion, LinkedinResult, InterviewItem, TunnelInfo, JobSession, WhyHereItem } from '@/types';
 import { DEFAULT_SETTINGS, MAIN_TABS } from '@/constants';
 import { loadAllPrompts, useContentGeneration } from '@/hooks/useContentGeneration';
 import {
@@ -39,8 +39,10 @@ const App = () => {
   const [linkedinProfileIndex, setLinkedinProfileIndex] = useState(-1);
   const [interviewPreps, setInterviewPreps] = useState<InterviewItem[][]>([]);
   const [interviewPrepIndex, setInterviewPrepIndex] = useState(-1);
+  const [whyHereAnswers, setWhyHereAnswers] = useState<WhyHereItem[][]>([]);
+  const [whyHereIndex, setWhyHereIndex] = useState(-1);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [activeTab, setActiveTab] = useState<'resume' | 'letter' | 'interview' | 'analysis' | 'linkedin'>('resume');
+  const [activeTab, setActiveTab] = useState<'resume' | 'letter' | 'interview' | 'analysis' | 'linkedin' | 'whyhere'>('resume');
   const [showSettings, setShowSettings] = useState(false);
   const [showTunnel, setShowTunnel] = useState(false);
   const [isLocalAccess, setIsLocalAccess] = useState(false);
@@ -97,11 +99,11 @@ const App = () => {
     const ts = Date.now();
     const newId = `job-${ts}`;
     const currentId = activeJobId ?? `job-${ts - 1}`;
-    const snapshot: JobSession = { id: currentId, jobText, companyDetails, versions, currentIndex, coverLetters, coverLetterIndex, linkedinProfiles, linkedinProfileIndex, interviewPreps, interviewPrepIndex, hasInitialAnalysisStarted };
+    const snapshot: JobSession = { id: currentId, jobText, companyDetails, versions, currentIndex, coverLetters, coverLetterIndex, linkedinProfiles, linkedinProfileIndex, interviewPreps, interviewPrepIndex, whyHereAnswers, whyHereIndex, hasInitialAnalysisStarted };
     const v0: ResumeVersion[] = resumeText
       ? [{ id: 'v0', timestamp: ts, tailoredResume: resumeText, analysis: { score: 0, gaps: [], improvements: [], strengths: [] } }]
       : [];
-    const newJob: JobSession = { id: newId, url: '', jobText: '', companyDetails: '', versions: v0, currentIndex: v0.length > 0 ? 0 : -1, coverLetters: [], coverLetterIndex: -1, linkedinProfiles: [], linkedinProfileIndex: -1, interviewPreps: [], interviewPrepIndex: -1, hasInitialAnalysisStarted: false };
+    const newJob: JobSession = { id: newId, url: '', jobText: '', companyDetails: '', versions: v0, currentIndex: v0.length > 0 ? 0 : -1, coverLetters: [], coverLetterIndex: -1, linkedinProfiles: [], linkedinProfileIndex: -1, interviewPreps: [], interviewPrepIndex: -1, whyHereAnswers: [], whyHereIndex: -1, hasInitialAnalysisStarted: false };
     setAllJobs(prev => {
       if (activeJobId) return [...prev.map(j => j.id === activeJobId ? snapshot : j), newJob];
       return [snapshot, newJob];
@@ -115,6 +117,8 @@ const App = () => {
     setLinkedinProfileIndex(-1);
     setInterviewPreps([]);
     setInterviewPrepIndex(-1);
+    setWhyHereAnswers([]);
+    setWhyHereIndex(-1);
     setHasInitialAnalysisStarted(false);
     setVersions(v0);
     setCurrentIndex(v0.length > 0 ? 0 : -1);
@@ -125,7 +129,7 @@ const App = () => {
     const target = allJobs.find(j => j.id === targetId);
     if (!target) return;
     if (activeJobId) {
-      const snapshot: JobSession = { id: activeJobId, url: '', jobText, companyDetails, versions, currentIndex, coverLetters, coverLetterIndex, linkedinProfiles, linkedinProfileIndex, interviewPreps, interviewPrepIndex, hasInitialAnalysisStarted };
+      const snapshot: JobSession = { id: activeJobId, url: '', jobText, companyDetails, versions, currentIndex, coverLetters, coverLetterIndex, linkedinProfiles, linkedinProfileIndex, interviewPreps, interviewPrepIndex, whyHereAnswers, whyHereIndex, hasInitialAnalysisStarted };
       setAllJobs(prev => prev.map(j => j.id === activeJobId ? snapshot : j));
     }
     setActiveJobId(targetId);
@@ -139,6 +143,8 @@ const App = () => {
     setLinkedinProfileIndex(target.linkedinProfileIndex);
     setInterviewPreps(target.interviewPreps);
     setInterviewPrepIndex(target.interviewPrepIndex);
+    setWhyHereAnswers(target.whyHereAnswers ?? []);
+    setWhyHereIndex(target.whyHereIndex ?? -1);
     setHasInitialAnalysisStarted(target.hasInitialAnalysisStarted);
   };
 
@@ -149,9 +155,11 @@ const App = () => {
     handleGenerateLinkedin,
     handleGeneratePrep,
     handleFetchUrlContent,
+    handleGenerateWhyHere,
   } = useContentGeneration({
     resumeText,
     jobText,
+    companyDetails,
     settings,
     versions,
     currentIndex,
@@ -159,6 +167,7 @@ const App = () => {
     coverLetters,
     linkedinProfiles,
     interviewPreps,
+    whyHereAnswers,
     setVersions,
     setCurrentIndex,
     setCoverLetters,
@@ -167,6 +176,8 @@ const App = () => {
     setLinkedinProfileIndex,
     setInterviewPreps,
     setInterviewPrepIndex,
+    setWhyHereAnswers,
+    setWhyHereIndex,
     setJobText,
     setCompanyDetails,
     setIsGenerating,
@@ -177,6 +188,7 @@ const App = () => {
   const coverLetter = coverLetters[coverLetterIndex] ?? "";
   const linkedinProfile = linkedinProfiles[linkedinProfileIndex] ?? null;
   const interviewPrep = interviewPreps[interviewPrepIndex] ?? [];
+  const whyHere = whyHereAnswers[whyHereIndex] ?? [];
 
   const copyToClipboard = (text: string) => navigator.clipboard.writeText(text);
 
@@ -434,6 +446,73 @@ const App = () => {
                                 <p className="text-slate-600 text-sm leading-relaxed italic bg-slate-50 p-4 rounded-lg border border-slate-100">
                                   {item.answer}
                                 </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Why Here tab */}
+                {activeTab === 'whyhere' && (
+                  <div className="space-y-6">
+                    <SectionHeader
+                      title='Why Do You Want to Work Here?'
+                      actions={whyHereAnswers.length > 0 ? (
+                        <div className="flex items-center gap-2">
+                          {whyHereAnswers.length > 1 && (
+                            <select
+                              value={whyHereIndex}
+                              onChange={e => setWhyHereIndex(Number(e.target.value))}
+                              className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                            >
+                              {whyHereAnswers.map((_, i) => (
+                                <option key={i} value={i}>Version {i + 1}</option>
+                              ))}
+                            </select>
+                          )}
+                          <ActionButtons
+                            onRegenerate={handleGenerateWhyHere}
+                            onCopy={() => copyToClipboard(whyHere.map((item, i) => `${i + 1}. ${item.angle}\n\n${item.explanation}\n\nFramework: ${item.framework}`).join('\n\n---\n\n'))}
+                            isGenerating={isGenerating}
+                            copyLabel="Copy All"
+                          />
+                        </div>
+                      ) : undefined}
+                    />
+                    {whyHere.length === 0 ? (
+                      <div className="bg-white border border-slate-200 rounded-2xl p-20">
+                        <EmptyStateCard
+                          icon={<Wand2 className="w-12 h-12" />}
+                          description="Generate tailored answers for 'Why do you want to work here?' based on your resume and the job."
+                          actionLabel="Generate Answer Ideas"
+                          actionIcon={<Wand2 className="w-4 h-4" />}
+                          onAction={handleGenerateWhyHere}
+                          disabled={isGenerating || !resumeText || !jobText}
+                        />
+                      </div>
+                    ) : (
+                      <div className="grid gap-4">
+                        {whyHere.map((item, i) => (
+                          <div key={i} className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:border-indigo-200 transition-colors group relative">
+                            <button
+                              onClick={() => copyToClipboard(`${item.angle}\n\n${item.explanation}\n\nFramework: ${item.framework}`)}
+                              className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 p-1.5 hover:bg-slate-100 rounded text-slate-400"
+                              title="Copy this idea"
+                            >
+                              <Copy className="w-3.5 h-3.5" />
+                            </button>
+                            <div className="flex gap-4">
+                              <span className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold shrink-0">{i + 1}</span>
+                              <div className="space-y-3">
+                                <h4 className="font-bold text-slate-900 leading-tight pr-8">{item.angle}</h4>
+                                <p className="text-slate-600 text-sm leading-relaxed">{item.explanation}</p>
+                                <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                                  <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Framework</p>
+                                  <p className="text-slate-600 text-sm leading-relaxed italic">{item.framework}</p>
+                                </div>
                               </div>
                             </div>
                           </div>

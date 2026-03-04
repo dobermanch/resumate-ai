@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import type { AppSettings, InterviewItem, LinkedinResult, PromptConfig, ResumeVersion } from '@/types';
+import type { AppSettings, InterviewItem, LinkedinResult, PromptConfig, ResumeVersion, WhyHereItem } from '@/types';
 import { DEFAULT_SETTINGS } from '@/constants';
 
 async function loadPromptConfig(name: string): Promise<PromptConfig> {
@@ -26,9 +26,11 @@ interface UseContentGenerationParams {
   versions: ResumeVersion[];
   currentIndex: number;
   hasInitialAnalysisStarted: boolean;
+  companyDetails: string;
   coverLetters: string[];
   linkedinProfiles: (LinkedinResult | null)[];
   interviewPreps: InterviewItem[][];
+  whyHereAnswers: WhyHereItem[][];
   setVersions: Dispatch<SetStateAction<ResumeVersion[]>>;
   setCurrentIndex: Dispatch<SetStateAction<number>>;
   setCoverLetters: Dispatch<SetStateAction<string[]>>;
@@ -37,22 +39,26 @@ interface UseContentGenerationParams {
   setLinkedinProfileIndex: Dispatch<SetStateAction<number>>;
   setInterviewPreps: Dispatch<SetStateAction<InterviewItem[][]>>;
   setInterviewPrepIndex: Dispatch<SetStateAction<number>>;
+  setWhyHereAnswers: Dispatch<SetStateAction<WhyHereItem[][]>>;
+  setWhyHereIndex: Dispatch<SetStateAction<number>>;
   setJobText: Dispatch<SetStateAction<string>>;
   setCompanyDetails: Dispatch<SetStateAction<string>>;
   setIsGenerating: Dispatch<SetStateAction<boolean>>;
   setHasInitialAnalysisStarted: Dispatch<SetStateAction<boolean>>;
-  setActiveTab: Dispatch<SetStateAction<'resume' | 'letter' | 'interview' | 'analysis' | 'linkedin'>>;
+  setActiveTab: Dispatch<SetStateAction<'resume' | 'letter' | 'interview' | 'analysis' | 'linkedin' | 'whyhere'>>;
 }
 
 export function useContentGeneration({
   resumeText,
   jobText,
+  companyDetails,
   settings,
   versions,
   currentIndex,
   coverLetters,
   linkedinProfiles,
   interviewPreps,
+  whyHereAnswers,
   setVersions,
   setCurrentIndex,
   setCoverLetters,
@@ -61,6 +67,8 @@ export function useContentGeneration({
   setLinkedinProfileIndex,
   setInterviewPreps,
   setInterviewPrepIndex,
+  setWhyHereAnswers,
+  setWhyHereIndex,
   setJobText,
   setCompanyDetails,
   setIsGenerating,
@@ -265,6 +273,42 @@ export function useContentGeneration({
     }
   };
 
+  const handleGenerateWhyHere = async () => {
+    if (!resumeText || !jobText) return;
+    setIsGenerating(true);
+    try {
+      const config = settings.prompts.whyHere;
+      const res = await fetch('/api/why-here', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          resumeText,
+          jobText,
+          companyText: companyDetails,
+          model: settings.model,
+          systemPrompt: config.system,
+          userPromptTemplate: config.user,
+        }),
+      });
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
+      const result = await res.json();
+      const items: WhyHereItem[] = Array.isArray(result.whyHere)
+        ? result.whyHere.map((item: { angle?: unknown; explanation?: unknown; framework?: unknown }) => ({
+            angle: typeof item?.angle === 'string' ? item.angle : String(item?.angle ?? ''),
+            explanation: typeof item?.explanation === 'string' ? item.explanation : String(item?.explanation ?? ''),
+            framework: typeof item?.framework === 'string' ? item.framework : String(item?.framework ?? ''),
+          }))
+        : [];
+      const newAnswers = [...whyHereAnswers, items];
+      setWhyHereAnswers(newAnswers);
+      setWhyHereIndex(newAnswers.length - 1);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return {
     handleInitialAnalysis,
     handleGenerateVersion,
@@ -272,5 +316,6 @@ export function useContentGeneration({
     handleGenerateLinkedin,
     handleGeneratePrep,
     handleFetchUrlContent,
+    handleGenerateWhyHere,
   };
 }

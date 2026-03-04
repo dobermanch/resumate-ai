@@ -1,5 +1,5 @@
 import type { AppSettings } from './types';
-import { FileEdit, CheckCircle2, MessageSquare, LayoutDashboard, User } from 'lucide-react';
+import { FileEdit, CheckCircle2, MessageSquare, LayoutDashboard, User, HeartHandshake } from 'lucide-react';
 
 export const DEFAULT_SETTINGS: AppSettings = {
   model: 'gpt-4o-mini',
@@ -28,6 +28,10 @@ export const DEFAULT_SETTINGS: AppSettings = {
     linkedin: {
       system: "You are a data extraction tool.",
       user: "Extract the core requirements and responsibilities from this job posting text or URL.\n\nINPUT:\n{{input}}"
+    },
+    whyHere: {
+      system: "You generate tailored 'Why do you want to work here?' answer ideas.",
+      user: "Generate 3-5 answer ideas for 'Why do you want to work here?' based on my resume and the job.\n\nRESUME:\n{{resumeText}}\n\nJOB:\n{{jobText}}\n\nCOMPANY:\n{{companyText}}"
     }
   }
 };
@@ -38,6 +42,7 @@ export const MAIN_TABS = [
   { id: 'letter', label: 'Cover Letter', icon: MessageSquare },
   { id: 'interview', label: 'Interview Prep', icon: LayoutDashboard },
   { id: 'linkedin', label: 'LinkedIn Profile', icon: User },
+  { id: 'whyhere', label: 'Why Here?', icon: HeartHandshake },
 ] as const;
 
 export type TabId = typeof MAIN_TABS[number]['id'];

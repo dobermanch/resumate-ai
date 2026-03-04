@@ -47,3 +47,15 @@ Respond with a JSON object matching exactly this structure:
   "jobDetails": <string: all job-specific content (title, summary, responsibilities, requirements, skills, experience level, location)>,
   "companyDetails": <string: all company-specific content (overview, mission/values, culture, product/industry, team description)>
 }`;
+
+export const WHY_HERE_SCHEMA = `
+Respond with a JSON object matching exactly this structure:
+{
+  "whyHere": [
+    {
+      "angle": <string: short title for this answer angle>,
+      "explanation": <string: why this angle fits the candidate based on their resume>,
+      "framework": <string: simple answer framework the candidate can follow to craft their response>
+    }
+  ]
+}`;
