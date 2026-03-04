@@ -10,6 +10,18 @@ export interface ResumeVersion {
   };
 }
 
+export interface JobSession {
+  id: string;
+  url: string;
+  jobText: string;
+  versions: ResumeVersion[];
+  currentIndex: number;
+  coverLetter: string;
+  linkedinProfile: LinkedinResult | null;
+  interviewPrep: InterviewItem[];
+  hasInitialAnalysisStarted: boolean;
+}
+
 export interface InterviewItem {
   question: string;
   answer: string;

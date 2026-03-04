@@ -12,7 +12,7 @@ import {
   Cpu,
 } from 'lucide-react';
 
-import type { AppSettings, ResumeVersion, LinkedinResult, InterviewItem, TunnelInfo } from '@/types';
+import type { AppSettings, ResumeVersion, LinkedinResult, InterviewItem, TunnelInfo, JobSession } from '@/types';
 import { DEFAULT_SETTINGS, MAIN_TABS } from '@/constants';
 import { loadAllPrompts, useContentGeneration } from '@/hooks/useContentGeneration';
 import {
@@ -45,6 +45,8 @@ const App = () => {
     isLoading: false, isRunning: false, url: null, qrCode: null, error: null, expiresAt: null,
   });
   const [hasInitialAnalysisStarted, setHasInitialAnalysisStarted] = useState(false);
+  const [allJobs, setAllJobs] = useState<JobSession[]>([]);
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
 
   useEffect(() => {
@@ -86,6 +88,47 @@ const App = () => {
       setVersions(updated);
     }
   }, [resumeText]);
+
+  const handleNewJob = () => {
+    const ts = Date.now();
+    const newId = `job-${ts}`;
+    const currentId = activeJobId ?? `job-${ts - 1}`;
+    const snapshot: JobSession = { id: currentId, jobText, versions, currentIndex, coverLetter, linkedinProfile, interviewPrep, hasInitialAnalysisStarted };
+    const v0: ResumeVersion[] = resumeText
+      ? [{ id: 'v0', timestamp: ts, tailoredResume: resumeText, analysis: { score: 0, gaps: [], improvements: [], strengths: [] } }]
+      : [];
+    const newJob: JobSession = { id: newId, jobText: '', versions: v0, currentIndex: v0.length > 0 ? 0 : -1, coverLetter: '', linkedinProfile: null, interviewPrep: [], hasInitialAnalysisStarted: false };
+    setAllJobs(prev => {
+      if (activeJobId) return [...prev.map(j => j.id === activeJobId ? snapshot : j), newJob];
+      return [snapshot, newJob];
+    });
+    setActiveJobId(newId);
+    setJobText('');
+    setCoverLetter('');
+    setLinkedinProfile(null);
+    setInterviewPrep([]);
+    setHasInitialAnalysisStarted(false);
+    setVersions(v0);
+    setCurrentIndex(v0.length > 0 ? 0 : -1);
+  };
+
+  const handleSwitchJob = (targetId: string) => {
+    if (targetId === activeJobId) return;
+    const target = allJobs.find(j => j.id === targetId);
+    if (!target) return;
+    if (activeJobId) {
+      const snapshot: JobSession = { id: activeJobId, jobText, versions, currentIndex, coverLetter, linkedinProfile, interviewPrep, hasInitialAnalysisStarted };
+      setAllJobs(prev => prev.map(j => j.id === activeJobId ? snapshot : j));
+    }
+    setActiveJobId(targetId);
+    setJobText(target.jobText);
+    setVersions(target.versions);
+    setCurrentIndex(target.currentIndex);
+    setCoverLetter(target.coverLetter);
+    setLinkedinProfile(target.linkedinProfile);
+    setInterviewPrep(target.interviewPrep);
+    setHasInitialAnalysisStarted(target.hasInitialAnalysisStarted);
+  };
 
   const {
     handleInitialAnalysis,
@@ -160,7 +203,7 @@ const App = () => {
 
       <main className="flex flex-1 overflow-hidden relative text-slate-900">
         <VersionTimeline versions={versions} currentIndex={currentIndex} onSelect={setCurrentIndex} />
-        <Sidebar resumeText={resumeText} setResumeText={setResumeText} jobText={jobText} setJobText={setJobText} onFetchUrl={handleFetchUrlContent} />
+        <Sidebar resumeText={resumeText} setResumeText={setResumeText} jobText={jobText} setJobText={setJobText} onFetchUrl={handleFetchUrlContent} allJobs={allJobs} activeJobId={activeJobId} onNewJob={handleNewJob} onSwitchJob={handleSwitchJob} hasInitialAnalysisStarted={hasInitialAnalysisStarted} isGenerating={isGenerating} />
 
         <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden">
           {/* Tab bar */}

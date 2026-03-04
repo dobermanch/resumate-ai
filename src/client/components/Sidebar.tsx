@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { FileText, Briefcase, RefreshCcw, Upload, Globe } from 'lucide-react';
+import type { JobSession } from '@/types';
 
 interface SidebarProps {
   resumeText: string;
@@ -7,9 +8,18 @@ interface SidebarProps {
   jobText: string;
   setJobText: (t: string) => void;
   onFetchUrl: (url: string) => Promise<void>;
+  allJobs: JobSession[];
+  activeJobId: string | null;
+  onNewJob: () => void;
+  onSwitchJob: (id: string) => void;
+  hasInitialAnalysisStarted: boolean;
+  isGenerating: boolean;
 }
 
-export const Sidebar = ({ resumeText, setResumeText, jobText, setJobText, onFetchUrl }: SidebarProps) => {
+const getJobLabel = (job: JobSession, index: number) =>
+  job.jobText?.trim().slice(0, 35) || `Job #${index + 1}`;
+
+export const Sidebar = ({ resumeText, setResumeText, jobText, setJobText, onFetchUrl, allJobs, activeJobId, onNewJob, onSwitchJob, hasInitialAnalysisStarted, isGenerating }: SidebarProps) => {
   const [activeInput, setActiveInput] = useState<'resume' | 'job'>('resume');
   const [jobUrl, setJobUrl] = useState("");
   const [isFetching, setIsFetching] = useState(false);
@@ -186,7 +196,7 @@ export const Sidebar = ({ resumeText, setResumeText, jobText, setJobText, onFetc
               <div className="flex gap-2">
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={isParsingFile}
+                  disabled={isParsingFile || isGenerating}
                   className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title={isParsingFile ? "Parsing file…" : "Upload file (.txt, .md, .pdf, .docx)"}
                 >
@@ -195,7 +205,7 @@ export const Sidebar = ({ resumeText, setResumeText, jobText, setJobText, onFetc
                     : <Upload className="w-3.5 h-3.5" />}
                 </button>
                 <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".txt,.md,.pdf,.docx" />
-                <button onClick={() => setResumeText("")} className="text-[10px] text-red-500 hover:underline font-bold">Clear</button>
+                <button  disabled={isParsingFile || isGenerating} onClick={() => setResumeText("")} className="text-[10px] text-red-500 hover:underline font-bold">Clear</button>
               </div>
             </div>
 
@@ -210,38 +220,74 @@ export const Sidebar = ({ resumeText, setResumeText, jobText, setJobText, onFetc
               className="flex-1 w-full p-4 text-sm bg-slate-50 text-slate-900 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-none font-serif leading-relaxed placeholder:text-slate-300 shadow-inner"
               placeholder="Paste or edit your resume here..."
               value={resumeText}
+              disabled={isGenerating}
               onChange={(e) => setResumeText(e.target.value)}
             />
           </div>
         ) : (
           <div className="space-y-3 h-full flex flex-col">
+            {allJobs.length > 1 && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Job Session</label>
+                <select
+                  value={activeJobId ?? ''}
+                  onChange={(e) => onSwitchJob(e.target.value)}
+                  disabled={isGenerating}
+                  className="w-full px-3 py-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-lg text-xs outline-none focus:ring-2 focus:ring-indigo-500 shadow-inner disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {allJobs.map((job, idx) => (
+                    <option key={job.id} value={job.id}>
+                      {job.id === activeJobId
+                        ? (jobText.trim().slice(0, 35) || `Job #${idx + 1}`)
+                        : getJobLabel(job, idx)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {hasInitialAnalysisStarted && (
+              <button
+                onClick={() => { setJobUrl(''); onNewJob(); }}
+                disabled={isGenerating}
+                className="w-full py-1.5 text-xs font-semibold text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                + New Job
+              </button>
+            )}
+
             <div className="space-y-2">
               <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Job URL</label>
               <div className="flex gap-1">
                 <input
                   type="text"
                   className="flex-1 px-3 py-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-lg text-xs outline-none focus:ring-2 focus:ring-indigo-500 shadow-inner"
-                  placeholder="Paste LinkedIn/Job link..."
+                  placeholder="Paste Job Link..."
                   value={jobUrl}
+                  disabled={isGenerating}
                   onChange={(e) => setJobUrl(e.target.value)}
                 />
                 <button
                   onClick={handleFetch}
-                  disabled={isFetching}
+                  disabled={isFetching || isGenerating}
                   className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 disabled:opacity-50"
                 >
                   {isFetching ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />}
                 </button>
               </div>
             </div>
+
+
+
             <div className="flex items-center justify-between pt-2">
               <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Job Details</label>
-              <button onClick={() => setJobText("")} className="text-[10px] text-red-500 hover:underline font-bold">Clear</button>
+              <button disabled={isFetching || isGenerating} onClick={() => setJobText("")} className="text-[10px] text-red-500 hover:underline font-bold">Clear</button>
             </div>
             <textarea
               className="flex-1 w-full p-4 text-sm bg-slate-50 text-slate-900 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-none leading-relaxed placeholder:text-slate-300 shadow-inner"
               placeholder="Paste description or let AI extract from URL..."
               value={jobText}
+              disabled={isGenerating}
               onChange={(e) => setJobText(e.target.value)}
             />
           </div>
