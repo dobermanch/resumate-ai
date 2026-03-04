@@ -40,3 +40,10 @@ Respond with a JSON object matching exactly this structure:
     "openToWork": <string: an ppen to work announcement post>
   }
 }`;
+
+export const JOB_PARSING_SCHEMA = `
+Respond with a JSON object matching exactly this structure:
+{
+  "jobDetails": <string: all job-specific content (title, summary, responsibilities, requirements, skills, experience level, location)>,
+  "companyDetails": <string: all company-specific content (overview, mission/values, culture, product/industry, team description)>
+}`;

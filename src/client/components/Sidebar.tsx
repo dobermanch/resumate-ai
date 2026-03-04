@@ -7,6 +7,8 @@ interface SidebarProps {
   setResumeText: (t: string) => void;
   jobText: string;
   setJobText: (t: string) => void;
+  companyDetails: string;
+  setCompanyDetails: (t: string) => void;
   onFetchUrl: (url: string) => Promise<void>;
   allJobs: JobSession[];
   activeJobId: string | null;
@@ -19,7 +21,7 @@ interface SidebarProps {
 const getJobLabel = (job: JobSession, index: number) =>
   job.jobText?.trim().slice(0, 35) || `Job #${index + 1}`;
 
-export const Sidebar = ({ resumeText, setResumeText, jobText, setJobText, onFetchUrl, allJobs, activeJobId, onNewJob, onSwitchJob, hasInitialAnalysisStarted, isGenerating }: SidebarProps) => {
+export const Sidebar = ({ resumeText, setResumeText, jobText, setJobText, companyDetails, setCompanyDetails, onFetchUrl, allJobs, activeJobId, onNewJob, onSwitchJob, hasInitialAnalysisStarted, isGenerating }: SidebarProps) => {
   const [activeInput, setActiveInput] = useState<'resume' | 'job'>('resume');
   const [jobUrl, setJobUrl] = useState("");
   const [isFetching, setIsFetching] = useState(false);
@@ -289,6 +291,18 @@ export const Sidebar = ({ resumeText, setResumeText, jobText, setJobText, onFetc
               value={jobText}
               disabled={isGenerating}
               onChange={(e) => setJobText(e.target.value)}
+            />
+
+            <div className="flex items-center justify-between pt-2">
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Company Details</label>
+              <button disabled={isFetching || isGenerating} onClick={() => setCompanyDetails("")} className="text-[10px] text-red-500 hover:underline font-bold">Clear</button>
+            </div>
+            <textarea
+              className="flex-1 w-full p-4 text-sm bg-slate-50 text-slate-900 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-none leading-relaxed placeholder:text-slate-300 shadow-inner"
+              placeholder="Company information extracted from job posting..."
+              value={companyDetails}
+              disabled={isGenerating}
+              onChange={(e) => setCompanyDetails(e.target.value)}
             />
           </div>
         )}

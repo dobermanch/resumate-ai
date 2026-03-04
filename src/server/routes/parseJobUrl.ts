@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
-import { generateText, replacePlaceholders } from '../utils/openai.js';
+import { generateJson, replacePlaceholders } from '../utils/openai.js';
+import { JOB_PARSING_SCHEMA } from '../utils/schemas.js';
 import type { ParseJobUrlRequest, ParseJobUrlResponse } from '../types.js';
 
 export const parseJobUrlRoute = new Hono();
@@ -35,13 +36,26 @@ parseJobUrlRoute.post('/parse-job-url', async (c) => {
   });
 
   try {
-    const jobText = await generateText({
+    const rawJson = await generateJson({
       model: body.model,
       systemPrompt: body.systemPrompt,
       userPrompt,
+      schemaDescription: JOB_PARSING_SCHEMA,
     });
+    const parsed = JSON.parse(rawJson);
+    const toText = (val: unknown): string => {
+      if (typeof val === 'string') return val;
+      if (val && typeof val === 'object')
+        return Object.entries(val as Record<string, unknown>)
+          .filter(([, v]) => v)
+          .map(([k, v]) => `${k}:\n${v}`)
+          .join('\n\n');
+      return String(val ?? '');
+    };
+    const jobText = toText(parsed.jobDetails);
+    const companyDetails = toText(parsed.companyDetails);
 
-    return c.json({ jobText } satisfies ParseJobUrlResponse);
+    return c.json({ jobText, companyDetails } satisfies ParseJobUrlResponse);
   } catch (error) {
     console.error('[parse-job-url] Error:', error);
     return c.json({ error: error instanceof Error ? error.message : String(error) }, 500);

@@ -58,6 +58,7 @@ export interface InterviewPrepResponse {
 
 export interface ParseJobUrlResponse {
   jobText: string;
+  companyDetails: string;
 }
 
 export interface LinkedinResult {

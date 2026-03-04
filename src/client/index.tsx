@@ -30,6 +30,7 @@ import {
 const App = () => {
   const [resumeText, setResumeText] = useState("");
   const [jobText, setJobText] = useState("");
+  const [companyDetails, setCompanyDetails] = useState("");
   const [versions, setVersions] = useState<ResumeVersion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [coverLetters, setCoverLetters] = useState<string[]>([]);
@@ -96,17 +97,18 @@ const App = () => {
     const ts = Date.now();
     const newId = `job-${ts}`;
     const currentId = activeJobId ?? `job-${ts - 1}`;
-    const snapshot: JobSession = { id: currentId, jobText, versions, currentIndex, coverLetters, coverLetterIndex, linkedinProfiles, linkedinProfileIndex, interviewPreps, interviewPrepIndex, hasInitialAnalysisStarted };
+    const snapshot: JobSession = { id: currentId, jobText, companyDetails, versions, currentIndex, coverLetters, coverLetterIndex, linkedinProfiles, linkedinProfileIndex, interviewPreps, interviewPrepIndex, hasInitialAnalysisStarted };
     const v0: ResumeVersion[] = resumeText
       ? [{ id: 'v0', timestamp: ts, tailoredResume: resumeText, analysis: { score: 0, gaps: [], improvements: [], strengths: [] } }]
       : [];
-    const newJob: JobSession = { id: newId, url: '', jobText: '', versions: v0, currentIndex: v0.length > 0 ? 0 : -1, coverLetters: [], coverLetterIndex: -1, linkedinProfiles: [], linkedinProfileIndex: -1, interviewPreps: [], interviewPrepIndex: -1, hasInitialAnalysisStarted: false };
+    const newJob: JobSession = { id: newId, url: '', jobText: '', companyDetails: '', versions: v0, currentIndex: v0.length > 0 ? 0 : -1, coverLetters: [], coverLetterIndex: -1, linkedinProfiles: [], linkedinProfileIndex: -1, interviewPreps: [], interviewPrepIndex: -1, hasInitialAnalysisStarted: false };
     setAllJobs(prev => {
       if (activeJobId) return [...prev.map(j => j.id === activeJobId ? snapshot : j), newJob];
       return [snapshot, newJob];
     });
     setActiveJobId(newId);
     setJobText('');
+    setCompanyDetails('');
     setCoverLetters([]);
     setCoverLetterIndex(-1);
     setLinkedinProfiles([]);
@@ -123,11 +125,12 @@ const App = () => {
     const target = allJobs.find(j => j.id === targetId);
     if (!target) return;
     if (activeJobId) {
-      const snapshot: JobSession = { id: activeJobId, url: '', jobText, versions, currentIndex, coverLetters, coverLetterIndex, linkedinProfiles, linkedinProfileIndex, interviewPreps, interviewPrepIndex, hasInitialAnalysisStarted };
+      const snapshot: JobSession = { id: activeJobId, url: '', jobText, companyDetails, versions, currentIndex, coverLetters, coverLetterIndex, linkedinProfiles, linkedinProfileIndex, interviewPreps, interviewPrepIndex, hasInitialAnalysisStarted };
       setAllJobs(prev => prev.map(j => j.id === activeJobId ? snapshot : j));
     }
     setActiveJobId(targetId);
     setJobText(target.jobText);
+    setCompanyDetails(target.companyDetails ?? '');
     setVersions(target.versions);
     setCurrentIndex(target.currentIndex);
     setCoverLetters(target.coverLetters);
@@ -165,6 +168,7 @@ const App = () => {
     setInterviewPreps,
     setInterviewPrepIndex,
     setJobText,
+    setCompanyDetails,
     setIsGenerating,
     setHasInitialAnalysisStarted,
     setActiveTab,
@@ -222,7 +226,7 @@ const App = () => {
 
       <main className="flex flex-1 overflow-hidden relative text-slate-900">
         <VersionTimeline versions={versions} currentIndex={currentIndex} onSelect={setCurrentIndex} />
-        <Sidebar resumeText={resumeText} setResumeText={setResumeText} jobText={jobText} setJobText={setJobText} onFetchUrl={handleFetchUrlContent} allJobs={allJobs} activeJobId={activeJobId} onNewJob={handleNewJob} onSwitchJob={handleSwitchJob} hasInitialAnalysisStarted={hasInitialAnalysisStarted} isGenerating={isGenerating} />
+        <Sidebar resumeText={resumeText} setResumeText={setResumeText} jobText={jobText} setJobText={setJobText} companyDetails={companyDetails} setCompanyDetails={setCompanyDetails} onFetchUrl={handleFetchUrlContent} allJobs={allJobs} activeJobId={activeJobId} onNewJob={handleNewJob} onSwitchJob={handleSwitchJob} hasInitialAnalysisStarted={hasInitialAnalysisStarted} isGenerating={isGenerating} />
 
         <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden">
           {/* Tab bar */}

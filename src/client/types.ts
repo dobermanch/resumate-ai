@@ -14,6 +14,7 @@ export interface JobSession {
   id: string;
   url: string;
   jobText: string;
+  companyDetails: string;
   versions: ResumeVersion[];
   currentIndex: number;
   coverLetters: string[];

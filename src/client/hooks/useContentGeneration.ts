@@ -38,6 +38,7 @@ interface UseContentGenerationParams {
   setInterviewPreps: Dispatch<SetStateAction<InterviewItem[][]>>;
   setInterviewPrepIndex: Dispatch<SetStateAction<number>>;
   setJobText: Dispatch<SetStateAction<string>>;
+  setCompanyDetails: Dispatch<SetStateAction<string>>;
   setIsGenerating: Dispatch<SetStateAction<boolean>>;
   setHasInitialAnalysisStarted: Dispatch<SetStateAction<boolean>>;
   setActiveTab: Dispatch<SetStateAction<'resume' | 'letter' | 'interview' | 'analysis' | 'linkedin'>>;
@@ -61,6 +62,7 @@ export function useContentGeneration({
   setInterviewPreps,
   setInterviewPrepIndex,
   setJobText,
+  setCompanyDetails,
   setIsGenerating,
   setHasInitialAnalysisStarted,
   setActiveTab,
@@ -257,6 +259,7 @@ export function useContentGeneration({
       if (!res.ok) throw new Error(`API error: ${res.status}`);
       const result = await res.json();
       setJobText(result.jobText || "");
+      setCompanyDetails(result.companyDetails || "");
     } catch (e) {
       alert("AI failed to fetch URL. Please paste content manually.");
     }
