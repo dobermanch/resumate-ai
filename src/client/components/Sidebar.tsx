@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { FileText, Briefcase, RefreshCcw, Upload, Globe } from 'lucide-react';
 
 interface SidebarProps {
@@ -15,6 +15,38 @@ export const Sidebar = ({ resumeText, setResumeText, jobText, setJobText, onFetc
   const [isFetching, setIsFetching] = useState(false);
   const [isParsingFile, setIsParsingFile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [sidebarWidth, setSidebarWidth] = useState(320);
+  const isDragging = useRef(false);
+  const dragStartX = useRef(0);
+  const dragStartWidth = useRef(0);
+
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    isDragging.current = true;
+    dragStartX.current = e.clientX;
+    dragStartWidth.current = sidebarWidth;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  }, [sidebarWidth]);
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current) return;
+      const delta = e.clientX - dragStartX.current;
+      setSidebarWidth(Math.min(600, Math.max(200, dragStartWidth.current + delta)));
+    };
+    const onMouseUp = () => {
+      if (!isDragging.current) return;
+      isDragging.current = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+  }, []);
 
   const handleFetch = async () => {
     if (!jobUrl) return;
@@ -121,7 +153,12 @@ export const Sidebar = ({ resumeText, setResumeText, jobText, setJobText, onFetc
   };
 
   return (
-    <aside className="w-80 border-r bg-white flex flex-col overflow-hidden shrink-0">
+    <aside className="border-r bg-white flex flex-col overflow-hidden shrink-0 relative" style={{ width: sidebarWidth }}>
+      <div
+        onMouseDown={onMouseDown}
+        className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-indigo-300 active:bg-indigo-500 transition-colors z-10"
+        title="Drag to resize"
+      />
       <div className="p-4 border-b">
         <div className="flex bg-slate-100 p-1 rounded-lg">
           <button
