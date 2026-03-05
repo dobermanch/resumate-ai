@@ -1,5 +1,5 @@
 import type { AppSettings } from './types';
-import { FileEdit, CheckCircle2, MessageSquare, LayoutDashboard, User, HeartHandshake } from 'lucide-react';
+import { FileEdit, CheckCircle2, MessageSquare, LayoutDashboard, User, HeartHandshake, ClipboardList } from 'lucide-react';
 
 export const DEFAULT_SETTINGS: AppSettings = {
   model: 'gpt-4o-mini',
@@ -32,6 +32,10 @@ export const DEFAULT_SETTINGS: AppSettings = {
     whyHere: {
       system: "You generate tailored 'Why do you want to work here?' answer ideas.",
       user: "Generate 3-5 answer ideas for 'Why do you want to work here?' based on my resume and the job.\n\nRESUME:\n{{resumeText}}\n\nJOB:\n{{jobText}}\n\nCOMPANY:\n{{companyText}}"
+    },
+    resumeAnalysis: {
+      system: "You analyze resumes and produce a structured, professional evaluation across multiple dimensions.",
+      user: "Analyze my resume and provide a structured evaluation.\n\n### My Resume:\n{{resumeText}}\n\nPlease evaluate across: Overall Score, Structure Analysis, Impact & Experience Analysis, Language Analysis, ATS Scan, Skills Identified, Best-Fit Job Types, and Key Improvement Opportunities."
     }
   }
 };
@@ -39,6 +43,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
 export const MAIN_TABS = [
   { id: 'resume', label: 'Tailored Resume', icon: FileEdit },
   { id: 'analysis', label: 'Match Analysis', icon: CheckCircle2 },
+  { id: 'resumeanalysis', label: 'Resume Analysis', icon: ClipboardList },
   { id: 'letter', label: 'Cover Letter', icon: MessageSquare },
   { id: 'interview', label: 'Interview Prep', icon: LayoutDashboard },
   { id: 'linkedin', label: 'LinkedIn Profile', icon: User },

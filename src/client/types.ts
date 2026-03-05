@@ -8,6 +8,23 @@ export interface ResumeVersion {
     gaps: string[];
     improvements: string[];
   };
+  resumeAnalysis: ResumeAnalysisResult | null;
+}
+
+export interface ResumeAnalysisResult {
+  overallScore: number;
+  structureAnalysis: string;
+  impactAnalysis: string;
+  languageAnalysis: string;
+  atsScan: string;
+  skillsIdentified: {
+    hardSkills: string[];
+    softSkills: string[];
+    tools: string[];
+    domainKeywords: string[];
+  };
+  bestFitJobTypes: string[];
+  keyImprovements: string[];
 }
 
 export interface JobSession {
@@ -61,6 +78,7 @@ export interface AppSettings {
     jobParsing: PromptConfig;
     linkedin: PromptConfig;
     whyHere: PromptConfig;
+    resumeAnalysis: PromptConfig;
   };
 }
 

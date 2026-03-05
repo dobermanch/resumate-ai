@@ -10,6 +10,11 @@ import {
   RefreshCcw,
   Wand2,
   Cpu,
+  ClipboardList,
+  MessageSquare,
+  LayoutDashboard,
+  User,
+  HeartHandshake,
 } from 'lucide-react';
 
 import type { AppSettings, ResumeVersion, LinkedinResult, InterviewItem, TunnelInfo, JobSession, WhyHereItem } from '@/types';
@@ -42,7 +47,7 @@ const App = () => {
   const [whyHereAnswers, setWhyHereAnswers] = useState<WhyHereItem[][]>([]);
   const [whyHereIndex, setWhyHereIndex] = useState(-1);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [activeTab, setActiveTab] = useState<'resume' | 'letter' | 'interview' | 'analysis' | 'linkedin' | 'whyhere'>('resume');
+  const [activeTab, setActiveTab] = useState<'resume' | 'letter' | 'interview' | 'analysis' | 'linkedin' | 'whyhere' | 'resumeanalysis'>('resume');
   const [showSettings, setShowSettings] = useState(false);
   const [showTunnel, setShowTunnel] = useState(false);
   const [isLocalAccess, setIsLocalAccess] = useState(false);
@@ -85,7 +90,8 @@ const App = () => {
         id: 'v0',
         timestamp: Date.now(),
         tailoredResume: resumeText,
-        analysis: { score: 0, gaps: [], improvements: [], strengths: [] }
+        analysis: { score: 0, gaps: [], improvements: [], strengths: [] },
+        resumeAnalysis: null,
       }]);
       setCurrentIndex(0);
     } else if (resumeText && versions.length > 0 && currentIndex === 0) {
@@ -101,7 +107,7 @@ const App = () => {
     const currentId = activeJobId ?? `job-${ts - 1}`;
     const snapshot: JobSession = { id: currentId, jobText, companyDetails, versions, currentIndex, coverLetters, coverLetterIndex, linkedinProfiles, linkedinProfileIndex, interviewPreps, interviewPrepIndex, whyHereAnswers, whyHereIndex, hasInitialAnalysisStarted };
     const v0: ResumeVersion[] = resumeText
-      ? [{ id: 'v0', timestamp: ts, tailoredResume: resumeText, analysis: { score: 0, gaps: [], improvements: [], strengths: [] } }]
+      ? [{ id: 'v0', timestamp: ts, tailoredResume: resumeText, analysis: { score: 0, gaps: [], improvements: [], strengths: [] }, resumeAnalysis: null }]
       : [];
     const newJob: JobSession = { id: newId, url: '', jobText: '', companyDetails: '', versions: v0, currentIndex: v0.length > 0 ? 0 : -1, coverLetters: [], coverLetterIndex: -1, linkedinProfiles: [], linkedinProfileIndex: -1, interviewPreps: [], interviewPrepIndex: -1, whyHereAnswers: [], whyHereIndex: -1, hasInitialAnalysisStarted: false };
     setAllJobs(prev => {
@@ -304,50 +310,179 @@ const App = () => {
 
                 {/* Analysis tab */}
                 {activeTab === 'analysis' && (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="md:col-span-1 bg-white border border-slate-200 rounded-2xl p-8 flex flex-col items-center text-center shadow-sm">
-                      <div className="relative w-32 h-32 flex items-center justify-center mb-6">
-                        <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                          <circle cx="18" cy="18" r="16" fill="none" className="stroke-slate-100" strokeWidth="3" />
-                          <circle cx="18" cy="18" r="16" fill="none" className="stroke-indigo-600 transition-all duration-1000" strokeWidth="3" strokeDasharray={`${currentVersion.analysis.score}, 100`} strokeLinecap="round" />
-                        </svg>
-                        <div className="absolute flex flex-col items-center">
-                          <span className="text-4xl font-black text-slate-900">{currentVersion.analysis.score}%</span>
-                          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Match</span>
+                  <div className="space-y-6">
+                    <SectionHeader
+                      title="Match Analysis"
+                      actions={currentVersion?.resumeAnalysis ? (
+                        <button
+                          onClick={() => copyToClipboard(
+                            `Resume Analysis Score: ${currentVersion.resumeAnalysis!.overallScore}/100\n\nStructure Analysis:\n${currentVersion.resumeAnalysis!.structureAnalysis}\n\nImpact & Experience:\n${currentVersion.resumeAnalysis!.impactAnalysis}\n\nLanguage Analysis:\n${currentVersion.resumeAnalysis!.languageAnalysis}\n\nATS Scan:\n${currentVersion.resumeAnalysis!.atsScan}\n\nSkills:\n- Hard: ${currentVersion.resumeAnalysis!.skillsIdentified.hardSkills.join(', ')}\n- Soft: ${currentVersion.resumeAnalysis!.skillsIdentified.softSkills.join(', ')}\n- Tools: ${currentVersion.resumeAnalysis!.skillsIdentified.tools.join(', ')}\n- Domain: ${currentVersion.resumeAnalysis!.skillsIdentified.domainKeywords.join(', ')}\n\nBest-Fit Roles:\n${currentVersion.resumeAnalysis!.bestFitJobTypes.join(', ')}\n\nKey Improvements:\n${currentVersion.resumeAnalysis!.keyImprovements.map((item, i) => `${i + 1}. ${item}`).join('\n')}`
+                          )}
+                          className="flex items-center gap-2 text-xs font-semibold text-slate-600 bg-white border px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+                        >
+                          <Copy className="w-3.5 h-3.5" /> Copy
+                        </button>
+                      ) : undefined}
+                    />
+                    {!currentVersion?.resumeAnalysis ? (
+                      <div className="bg-white border border-slate-200 rounded-2xl p-20">
+                        <EmptyStateCard
+                          icon={<CheckCircle2 className="w-12 h-12" />}
+                          description={isGenerating ? "Matching your resume to job…" : "Resume matching analysis runs automatically with each version. Run Initial Analysis to get started."}
+                        />
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="md:col-span-1 bg-white border border-slate-200 rounded-2xl p-8 flex flex-col items-center text-center shadow-sm">
+                          <div className="relative w-32 h-32 flex items-center justify-center mb-6">
+                            <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                              <circle cx="18" cy="18" r="16" fill="none" className="stroke-slate-100" strokeWidth="3" />
+                              <circle cx="18" cy="18" r="16" fill="none" className="stroke-indigo-600 transition-all duration-1000" strokeWidth="3" strokeDasharray={`${currentVersion.analysis.score}, 100`} strokeLinecap="round" />
+                            </svg>
+                            <div className="absolute flex flex-col items-center">
+                              <span className="text-4xl font-black text-slate-900">{currentVersion.analysis.score}%</span>
+                              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Match</span>
+                            </div>
+                          </div>
+                          <h4 className="font-bold text-slate-900 text-lg mb-1">Compatibility Score</h4>
+                          <p className="text-xs text-slate-500 leading-relaxed italic">Analysis for V{currentIndex}</p>
+                        </div>
+                        <div className="md:col-span-2 space-y-6 text-slate-900">
+                          <AnalysisCard
+                            icon={<CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+                            title="Strong Areas"
+                            items={currentVersion.analysis.strengths}
+                            variant="success"
+                            emptyMessage="No major strengths identified."
+                          />
+                          <AnalysisCard
+                            icon={<AlertCircle className="w-4 h-4 text-amber-500" />}
+                            title="Missing Qualifications"
+                            items={currentVersion.analysis.gaps}
+                            variant="warning"
+                            emptyMessage="No major gaps identified."
+                          />
+                          <AnalysisCard
+                            icon={<CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+                            title="Optimization Roadmap"
+                            items={currentVersion.analysis.improvements}
+                            variant="steps"
+                            emptyMessage="Resume is optimally tailored for this iteration."
+                          />
                         </div>
                       </div>
-                      <h4 className="font-bold text-slate-900 text-lg mb-1">Compatibility Score</h4>
-                      <p className="text-xs text-slate-500 leading-relaxed italic">Analysis for V{currentIndex}</p>
-                    </div>
-                    <div className="md:col-span-2 space-y-6 text-slate-900">
-                      <AnalysisCard
-                        icon={<CheckCircle2 className="w-4 h-4 text-emerald-500" />}
-                        title="Strong Areas"
-                        items={currentVersion.analysis.strengths}
-                        variant="success"
-                        emptyMessage="No major strengths identified."
-                      />
-                      <AnalysisCard
-                        icon={<AlertCircle className="w-4 h-4 text-amber-500" />}
-                        title="Missing Qualifications"
-                        items={currentVersion.analysis.gaps}
-                        variant="warning"
-                        emptyMessage="No major gaps identified."
-                      />
-                      <AnalysisCard
-                        icon={<CheckCircle2 className="w-4 h-4 text-emerald-500" />}
-                        title="Optimization Roadmap"
-                        items={currentVersion.analysis.improvements}
-                        variant="steps"
-                        emptyMessage="Resume is optimally tailored for this iteration."
-                      />
-                    </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Resume Analysis tab */}
+                {activeTab === 'resumeanalysis' && (
+                  <div className="space-y-6">
+                    <SectionHeader
+                      title="Resume Analysis"
+                      actions={currentVersion?.resumeAnalysis ? (
+                        <button
+                          onClick={() => copyToClipboard(
+                            `Resume Analysis Score: ${currentVersion.resumeAnalysis!.overallScore}/100\n\nStructure Analysis:\n${currentVersion.resumeAnalysis!.structureAnalysis}\n\nImpact & Experience:\n${currentVersion.resumeAnalysis!.impactAnalysis}\n\nLanguage Analysis:\n${currentVersion.resumeAnalysis!.languageAnalysis}\n\nATS Scan:\n${currentVersion.resumeAnalysis!.atsScan}\n\nSkills:\n- Hard: ${currentVersion.resumeAnalysis!.skillsIdentified.hardSkills.join(', ')}\n- Soft: ${currentVersion.resumeAnalysis!.skillsIdentified.softSkills.join(', ')}\n- Tools: ${currentVersion.resumeAnalysis!.skillsIdentified.tools.join(', ')}\n- Domain: ${currentVersion.resumeAnalysis!.skillsIdentified.domainKeywords.join(', ')}\n\nBest-Fit Roles:\n${currentVersion.resumeAnalysis!.bestFitJobTypes.join(', ')}\n\nKey Improvements:\n${currentVersion.resumeAnalysis!.keyImprovements.map((item, i) => `${i + 1}. ${item}`).join('\n')}`
+                          )}
+                          className="flex items-center gap-2 text-xs font-semibold text-slate-600 bg-white border px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+                        >
+                          <Copy className="w-3.5 h-3.5" /> Copy
+                        </button>
+                      ) : undefined}
+                    />
+                    {!currentVersion?.resumeAnalysis ? (
+                      <div className="bg-white border border-slate-200 rounded-2xl p-20">
+                        <EmptyStateCard
+                          icon={<ClipboardList className="w-12 h-12" />}
+                          description={isGenerating ? "Analyzing your resume…" : "Resume analysis runs automatically with each version. Run Initial Analysis to get started."}
+                        />
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        {/* Score */}
+                        <div className="bg-white border border-slate-200 rounded-2xl p-8 flex flex-col items-center text-center shadow-sm">
+                          <div className="relative w-32 h-32 flex items-center justify-center mb-4">
+                            <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                              <circle cx="18" cy="18" r="16" fill="none" className="stroke-slate-100" strokeWidth="3" />
+                              <circle cx="18" cy="18" r="16" fill="none" className={`transition-all duration-1000 ${currentVersion.resumeAnalysis.overallScore >= 70 ? 'stroke-emerald-500' : currentVersion.resumeAnalysis.overallScore >= 45 ? 'stroke-amber-500' : 'stroke-red-400'}`} strokeWidth="3" strokeDasharray={`${currentVersion.resumeAnalysis.overallScore}, 100`} strokeLinecap="round" />
+                            </svg>
+                            <div className="absolute flex flex-col items-center">
+                              <span className="text-4xl font-black text-slate-900">{currentVersion.resumeAnalysis.overallScore}</span>
+                              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">/ 100</span>
+                            </div>
+                          </div>
+                          <h4 className="font-bold text-slate-900 text-lg">Overall Resume Score</h4>
+                          <p className="text-xs text-slate-400 italic mt-1">Analysis for V{currentIndex}</p>
+                        </div>
+
+                        {/* Analysis cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {[
+                            { title: 'Structure Analysis', content: currentVersion.resumeAnalysis.structureAnalysis },
+                            { title: 'Impact & Experience', content: currentVersion.resumeAnalysis.impactAnalysis },
+                            { title: 'Language Analysis', content: currentVersion.resumeAnalysis.languageAnalysis },
+                            { title: 'ATS Scan', content: currentVersion.resumeAnalysis.atsScan },
+                          ].map(({ title, content }) => (
+                            <div key={title} className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                              <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">{title}</p>
+                              <p className="text-slate-700 text-sm leading-relaxed">{content}</p>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Skills */}
+                        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                          <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Skills Identified</p>
+                          <div className="space-y-3">
+                            {([
+                              { label: 'Hard Skills', items: currentVersion.resumeAnalysis.skillsIdentified.hardSkills, color: 'bg-indigo-50 text-indigo-700' },
+                              { label: 'Soft Skills', items: currentVersion.resumeAnalysis.skillsIdentified.softSkills, color: 'bg-emerald-50 text-emerald-700' },
+                              { label: 'Tools & Technologies', items: currentVersion.resumeAnalysis.skillsIdentified.tools, color: 'bg-violet-50 text-violet-700' },
+                              { label: 'Domain Keywords', items: currentVersion.resumeAnalysis.skillsIdentified.domainKeywords, color: 'bg-amber-50 text-amber-700' },
+                            ] as const).map(({ label, items, color }) => items.length > 0 && (
+                              <div key={label}>
+                                <p className="text-xs font-semibold text-slate-500 mb-1.5">{label}</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {items.map((skill, i) => (
+                                    <span key={i} className={`text-xs px-2.5 py-1 rounded-full font-medium ${color}`}>{skill}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Best-fit job types */}
+                        {currentVersion.resumeAnalysis.bestFitJobTypes.length > 0 && (
+                          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                            <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Best-Fit Job Types</p>
+                            <div className="flex flex-wrap gap-2">
+                              {currentVersion.resumeAnalysis.bestFitJobTypes.map((role, i) => (
+                                <span key={i} className="text-sm px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 font-medium">{role}</span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Key improvements */}
+                        {currentVersion.resumeAnalysis.keyImprovements.length > 0 && (
+                          <AnalysisCard
+                            icon={<CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+                            title="Key Improvement Opportunities"
+                            items={currentVersion.resumeAnalysis.keyImprovements}
+                            variant="steps"
+                            emptyMessage="No major improvements identified."
+                          />
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 
                 {/* Cover Letter tab */}
                 {activeTab === 'letter' && (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <SectionHeader
                       title="Cover Letter"
                       actions={coverLetters.length > 0 ? (
@@ -371,13 +506,13 @@ const App = () => {
                         </div>
                       ) : undefined}
                     />
-                    <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-12 min-h-[500px] font-serif relative">
+                    <div className="bg-white border border-slate-200 rounded-2xl p-20">
                       {!coverLetter ? (
                         <EmptyStateCard
-                          icon={<Wand2 className="w-12 h-12" />}
+                          icon={<MessageSquare className="w-12 h-12" />}
                           description="Need a persuasive cover letter for this role?"
                           actionLabel="Draft Cover Letter"
-                          actionIcon={<Wand2 className="w-4 h-4" />}
+                          actionIcon={<MessageSquare className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />}
                           onAction={handleGenerateLetter}
                           disabled={isGenerating || !resumeText || !jobText}
                         />
@@ -420,10 +555,10 @@ const App = () => {
                     {interviewPrep.length === 0 ? (
                       <div className="bg-white border border-slate-200 rounded-2xl p-20">
                         <EmptyStateCard
-                          icon={<RefreshCcw className="w-12 h-12" />}
+                          icon={<LayoutDashboard className="w-12 h-12" />}
                           description="Generate practice questions based on the JD requirements."
                           actionLabel="Generate Prep Cards"
-                          actionIcon={<RefreshCcw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />}
+                          actionIcon={<LayoutDashboard className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />}
                           onAction={handleGeneratePrep}
                           disabled={isGenerating || jobText == ""}
                         />
@@ -485,10 +620,10 @@ const App = () => {
                     {whyHere.length === 0 ? (
                       <div className="bg-white border border-slate-200 rounded-2xl p-20">
                         <EmptyStateCard
-                          icon={<Wand2 className="w-12 h-12" />}
+                          icon={<HeartHandshake className="w-12 h-12" />}
                           description="Generate tailored answers for 'Why do you want to work here?' based on your resume and the job."
                           actionLabel="Generate Answer Ideas"
-                          actionIcon={<Wand2 className="w-4 h-4" />}
+                          actionIcon={<HeartHandshake className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />}
                           onAction={handleGenerateWhyHere}
                           disabled={isGenerating || !resumeText || !jobText}
                         />
@@ -524,7 +659,7 @@ const App = () => {
 
                 {/* LinkedIn tab */}
                 {activeTab === 'linkedin' && (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <SectionHeader
                       title="LinkedIn Profile"
                       actions={linkedinProfiles.length > 0 ? (
@@ -548,13 +683,13 @@ const App = () => {
                         </div>
                       ) : undefined}
                     />
-                    <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-12 min-h-[500px] font-serif relative">
+                    <div className="bg-white border border-slate-200 rounded-2xl p-20">
                       {!linkedinProfile ? (
                         <EmptyStateCard
-                          icon={<Wand2 className="w-12 h-12" />}
+                          icon={<User className="w-12 h-12" />}
                           description="Need a persuasive LinkedIn profile?"
                           actionLabel="Draft Profile Content"
-                          actionIcon={<Wand2 className="w-4 h-4" />}
+                          actionIcon={<User className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />}
                           onAction={handleGenerateLinkedin}
                           disabled={isGenerating}
                         />

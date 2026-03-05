@@ -13,6 +13,7 @@ import { interviewPrepRoute } from './routes/interviewPrep.js';
 import { parseJobUrlRoute } from './routes/parseJobUrl.js';
 import { linkedinRoute } from './routes/linkedin.js';
 import { whyHereRoute } from './routes/whyHere.js';
+import { resumeAnalysisRoute } from './routes/resumeAnalysis.js';
 import { tunnelRoute } from './routes/tunnel.js';
 
 const app = new Hono();
@@ -38,6 +39,7 @@ app.route('/api', interviewPrepRoute);
 app.route('/api', parseJobUrlRoute);
 app.route('/api', linkedinRoute);
 app.route('/api', whyHereRoute);
+app.route('/api', resumeAnalysisRoute);
 app.route('/api', tunnelRoute);
 
 if (process.env.NODE_ENV === 'production') {

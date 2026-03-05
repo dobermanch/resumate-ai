@@ -59,3 +59,21 @@ Respond with a JSON object matching exactly this structure:
     }
   ]
 }`;
+
+export const RESUME_ANALYSIS_SCHEMA = `
+Respond with a JSON object matching exactly this structure:
+{
+  "overallScore": <number 0-100 summarizing overall resume strength>,
+  "structureAnalysis": <string: evaluation of formatting, bullet point usage, clarity, ATS compatibility, and template risks>,
+  "impactAnalysis": <string: assessment of bullet points impact, missing metrics, action verb strength, and quantified achievements>,
+  "languageAnalysis": <string: feedback on weak verbs, clichés, buzzwords, and filler words>,
+  "atsScan": <string: ATS compatibility assessment, missing keywords, and structural parsing issues>,
+  "skillsIdentified": {
+    "hardSkills": [<string>],
+    "softSkills": [<string>],
+    "tools": [<string>],
+    "domainKeywords": [<string>]
+  },
+  "bestFitJobTypes": [<string: job category or role type the candidate appears suited for>],
+  "keyImprovements": [<string: specific, actionable improvement suggestion>]
+}`;

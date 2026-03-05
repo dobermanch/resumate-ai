@@ -45,7 +45,7 @@ interface UseContentGenerationParams {
   setCompanyDetails: Dispatch<SetStateAction<string>>;
   setIsGenerating: Dispatch<SetStateAction<boolean>>;
   setHasInitialAnalysisStarted: Dispatch<SetStateAction<boolean>>;
-  setActiveTab: Dispatch<SetStateAction<'resume' | 'letter' | 'interview' | 'analysis' | 'linkedin' | 'whyhere'>>;
+  setActiveTab: Dispatch<SetStateAction<'resume' | 'letter' | 'interview' | 'analysis' | 'linkedin' | 'whyhere' | 'resumeanalysis'>>;
 }
 
 export function useContentGeneration({
@@ -78,24 +78,47 @@ export function useContentGeneration({
   const handleInitialAnalysis = async () => {
     setIsGenerating(true);
     try {
-      const config = settings.prompts.matchAnalysis;
-      const res = await fetch('/api/match-analysis', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          resumeText,
-          jobText,
-          model: settings.model,
-          systemPrompt: config.system,
-          userPromptTemplate: config.user,
+      const matchConfig = settings.prompts.matchAnalysis;
+      const resumeConfig = settings.prompts.resumeAnalysis;
+
+      const [matchRes, resumeAnalysisRes] = await Promise.all([
+        fetch('/api/match-analysis', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            resumeText,
+            jobText,
+            model: settings.model,
+            systemPrompt: matchConfig.system,
+            userPromptTemplate: matchConfig.user,
+          }),
         }),
-      });
-      if (!res.ok) throw new Error(`API error: ${res.status}`);
-      const result = await res.json();
+        fetch('/api/resume-analysis', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            resumeText,
+            model: settings.model,
+            systemPrompt: resumeConfig.system,
+            userPromptTemplate: resumeConfig.user,
+          }),
+        }),
+      ]);
+
+      if (!matchRes.ok) throw new Error(`API error: ${matchRes.status}`);
+      if (!resumeAnalysisRes.ok) throw new Error(`API error: ${resumeAnalysisRes.status}`);
+
+      const matchResult = await matchRes.json();
+      const resumeAnalysisResult = await resumeAnalysisRes.json();
+
       setVersions(prev => {
         const updated = [...prev];
         if (updated.length > 0) {
-          updated[0] = { ...updated[0], analysis: result.analysis };
+          updated[0] = {
+            ...updated[0],
+            analysis: matchResult.analysis,
+            resumeAnalysis: resumeAnalysisResult.analysis ?? null,
+          };
         }
         return updated;
       });
@@ -114,7 +137,15 @@ export function useContentGeneration({
     try {
       const config = settings.prompts.tailoredResume;
       const currentRes = versions[currentIndex]?.tailoredResume || resumeText;
-      const improvements = versions[currentIndex]?.analysis.improvements.join("\n") || "None";
+      const improvements1 = versions[currentIndex]?.analysis.improvements.join("\n") || null;
+      const improvements2 = versions[currentIndex]?.resumeAnalysis.keyImprovements.join("\n") || null;
+      var improvements = ''
+      if (improvements1) {
+        improvements += '\n' + improvements1
+      }
+      if (improvements2) {
+        improvements += '\n' + improvements2
+      }
 
       const res = await fetch('/api/tailored-resume', {
         method: 'POST',
@@ -131,26 +162,45 @@ export function useContentGeneration({
       if (!res.ok) throw new Error(`API error: ${res.status}`);
       const result = await res.json();
 
-      const analysisRes = await fetch('/api/match-analysis', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          resumeText: result.tailoredResume,
-          jobText,
-          model: settings.model,
-          systemPrompt: config.system,
-          userPromptTemplate: config.user,
+      const matchConfig = settings.prompts.matchAnalysis;
+      const resumeConfig = settings.prompts.resumeAnalysis;
+
+      const [analysisRes, resumeAnalysisRes] = await Promise.all([
+        fetch('/api/match-analysis', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            resumeText: result.tailoredResume,
+            jobText,
+            model: settings.model,
+            systemPrompt: matchConfig.system,
+            userPromptTemplate: matchConfig.user,
+          }),
         }),
-      });
+        fetch('/api/resume-analysis', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            resumeText: result.tailoredResume,
+            model: settings.model,
+            systemPrompt: resumeConfig.system,
+            userPromptTemplate: resumeConfig.user,
+          }),
+        }),
+      ]);
+
       if (!analysisRes.ok) throw new Error(`API error: ${analysisRes.status}`);
+      if (!resumeAnalysisRes.ok) throw new Error(`API error: ${resumeAnalysisRes.status}`);
       const analysisResult = await analysisRes.json();
+      const resumeAnalysisResult = await resumeAnalysisRes.json();
 
       setVersions(prev => {
         return [...prev, {
           id: `v${prev.length}`,
           timestamp: Date.now(),
           tailoredResume: result.tailoredResume,
-          analysis: analysisResult.analysis
+          analysis: analysisResult.analysis,
+          resumeAnalysis: resumeAnalysisResult.analysis ?? null,
         }];
       });
       setCurrentIndex(versions.length);

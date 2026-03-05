@@ -86,3 +86,27 @@ export interface WhyHereItem {
 export interface WhyHereResponse {
   whyHere: WhyHereItem[];
 }
+
+export interface ResumeAnalysisRequest extends BaseRequest {
+  resumeText: string;
+}
+
+export interface ResumeAnalysisResult {
+  overallScore: number;
+  structureAnalysis: string;
+  impactAnalysis: string;
+  languageAnalysis: string;
+  atsScan: string;
+  skillsIdentified: {
+    hardSkills: string[];
+    softSkills: string[];
+    tools: string[];
+    domainKeywords: string[];
+  };
+  bestFitJobTypes: string[];
+  keyImprovements: string[];
+}
+
+export interface ResumeAnalysisResponse {
+  analysis: ResumeAnalysisResult;
+}
