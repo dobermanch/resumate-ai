@@ -2,13 +2,13 @@ Using the information below, generate several ideas for how I can answer the que
 “Why do you want to work here?”
 
 ### Job Description:
-{jobText}
+{{jobText}}
 
 ### Company Details:
-{companyText}
+{{companyText}}
 
 ### My Resume:
-{resumeText}
+{{resumeText}}
 
 ### What I need from you:
 1. Provide 3–5 distinct answer ideas.

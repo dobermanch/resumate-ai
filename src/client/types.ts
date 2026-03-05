@@ -65,6 +65,7 @@ export interface LinkedinResult {
 export interface PromptConfig {
   system: string;
   user: string;
+  placeholders: string[];
 }
 
 export interface AppSettings {

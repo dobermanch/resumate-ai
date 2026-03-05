@@ -13,9 +13,4 @@ Based on the job description below, generate predicted interview questions.
    - Explain why interviewers ask it.
    - Provide a suggested answer framework (not a full answer).
 
-3. Keep the output structured like this:
-   - Question
-   - Why they ask it
-   - Suggested answer framework
-
 Make the predictions realistic, relevant to the job description, and focused on the competencies the role requires.

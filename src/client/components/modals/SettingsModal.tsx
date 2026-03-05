@@ -88,9 +88,11 @@ export const SettingsModal = ({ isOpen, onClose, settings, setSettings }: Settin
                   setSettings({ ...settings, prompts: newPrompts });
                 }}
               />
-              <p className="text-[9px] text-slate-500 font-medium italic mt-1">
-                {'Placeholders: {{resumeText}}, {{jobText}}, {{improvements}}, {{input}}'}
-              </p>
+              {config.placeholders && config.placeholders.length > 0 && (
+                <p className="text-[10px] text-slate-500 font-medium mt-1">
+                  {'Placeholders: ' + config.placeholders.join(' ')}
+                </p>
+              )}
             </div>
           </div>
         </section>

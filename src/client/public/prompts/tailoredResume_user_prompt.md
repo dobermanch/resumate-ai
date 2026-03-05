@@ -14,10 +14,6 @@ I want to tailor my resume to the job description below.
 5. Improve ATS alignment by naturally integrating relevant keywords from the job description without keyword stuffing.
 6. Keep the structure ATS-friendly (simple headings, bullet points, no tables, columns, or graphics).
 7. Preserve my actual experience — do not invent new roles, achievements, metrics, or skills.
-8. Provide the output in this format:
-   - Updated Summary
-   - Updated Experience (section by section)
-   - Updated Skills
 
 ### Additional Recommendations:
 {{improvements}}

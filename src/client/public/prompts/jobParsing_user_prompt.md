@@ -1,7 +1,7 @@
 Extract job‑related and company‑related information from the HTML content below.
 
 ### HTML:
-{{HTML_CONTENT}}
+{{pageContent}}
 
 ### What I need from you:
 1. Parse the HTML and extract only the information that describes the job itself.

@@ -31,7 +31,7 @@ parseJobUrlRoute.post('/parse-job-url', async (c) => {
 
   // jobParsing_user_prompt.md uses {HTML_CONTENT} (single brace) — pass both variants
   const userPrompt = replacePlaceholders(body.userPromptTemplate, {
-    HTML_CONTENT: pageContent,
+    pageContent: pageContent,
     input: pageContent,
   });
 

@@ -7,35 +7,43 @@ export const DEFAULT_SETTINGS: AppSettings = {
   prompts: {
     tailoredResume: {
       system: "You are an expert resume writer.",
-      user: "Based on the job description and my current resume, generate a NEW TAILORED VERSION of the resume that highlights my most relevant achievements for this specific role.\n\nJOB:\n{{jobText}}\n\nRESUME:\n{{resumeText}}\n\nPREVIOUS FEEDBACK:\n{{improvements}}"
+      user: "Based on the job description and my current resume, generate a NEW TAILORED VERSION of the resume that highlights my most relevant achievements for this specific role.\n\nJOB:\n{{jobText}}\n\nRESUME:\n{{resumeText}}\n\nPREVIOUS FEEDBACK:\n{{improvements}}",
+      placeholders: ["{{jobText}}", "{{resumeText}}", "{{improvements}}"],
     },
     coverLetter: {
       system: "You are a professional career coach writing a persuasive cover letter.",
-      user: "Write a compelling cover letter for this job role based on my background.\n\nRESUME:\n{{resumeText}}\n\nJOB:\n{{jobText}}"
+      user: "Write a compelling cover letter for this job role based on my background.\n\nRESUME:\n{{resumeText}}\n\nJOB:\n{{jobText}}",
+      placeholders: ["{{jobText}}", "{{resumeText}}"],
     },
     interviewPrep: {
       system: "You are a senior hiring manager preparing a candidate for an interview.",
-      user: "Generate 5 behavioral interview questions and STAR answers tailored to this resume and job.\n\nRESUME:\n{{resumeText}}\n\nJOB:\n{{jobText}}"
+      user: "Generate 5 behavioral interview questions and STAR answers tailored to this resume and job.\n\nRESUME:\n{{resumeText}}\n\nJOB:\n{{jobText}}",
+      placeholders: ["{{jobText}}"],
     },
     matchAnalysis: {
       system: "You are a recruitment specialist providing honest feedback on candidate suitability.",
-      user: "Perform a MATCH ANALYSIS. Provide a score (0-100), key skill gaps, and improvement tips.\n\nRESUME:\n{{resumeText}}\n\nJOB:\n{{jobText}}"
+      user: "Perform a MATCH ANALYSIS. Provide a score (0-100), key skill gaps, and improvement tips.\n\nRESUME:\n{{resumeText}}\n\nJOB:\n{{jobText}}",
+      placeholders: ["{{jobText}}", "{{resumeText}}"],
     },
     jobParsing: {
       system: "You are a data extraction tool.",
-      user: "Extract the core requirements and responsibilities from this job posting text or URL.\n\nINPUT:\n{{input}}"
+      user: "Extract the core requirements and responsibilities from this job posting text or URL.\n\nINPUT:\n{{input}}",
+      placeholders: ["{{pageContent}}"],
     },
     linkedin: {
       system: "You are a data extraction tool.",
-      user: "Extract the core requirements and responsibilities from this job posting text or URL.\n\nINPUT:\n{{input}}"
+      user: "Extract the core requirements and responsibilities from this job posting text or URL.\n\nINPUT:\n{{input}}",
+      placeholders: ["{{resumeText}}"],
     },
     whyHere: {
       system: "You generate tailored 'Why do you want to work here?' answer ideas.",
-      user: "Generate 3-5 answer ideas for 'Why do you want to work here?' based on my resume and the job.\n\nRESUME:\n{{resumeText}}\n\nJOB:\n{{jobText}}\n\nCOMPANY:\n{{companyText}}"
+      user: "Generate 3-5 answer ideas for 'Why do you want to work here?' based on my resume and the job.\n\nRESUME:\n{{resumeText}}\n\nJOB:\n{{jobText}}\n\nCOMPANY:\n{{companyText}}",
+      placeholders: ["{{jobText}}", "{{resumeText}}", "{{companyText}}"],
     },
     resumeAnalysis: {
       system: "You analyze resumes and produce a structured, professional evaluation across multiple dimensions.",
-      user: "Analyze my resume and provide a structured evaluation.\n\n### My Resume:\n{{resumeText}}\n\nPlease evaluate across: Overall Score, Structure Analysis, Impact & Experience Analysis, Language Analysis, ATS Scan, Skills Identified, Best-Fit Job Types, and Key Improvement Opportunities."
+      user: "Analyze my resume and provide a structured evaluation.\n\n### My Resume:\n{{resumeText}}\n\nPlease evaluate across: Overall Score, Structure Analysis, Impact & Experience Analysis, Language Analysis, ATS Scan, Skills Identified, Best-Fit Job Types, and Key Improvement Opportunities.",
+      placeholders: ["{{resumeText}}"],
     }
   }
 };

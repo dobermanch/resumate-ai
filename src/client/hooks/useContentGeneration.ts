@@ -13,7 +13,10 @@ export async function loadAllPrompts(): Promise<AppSettings['prompts']> {
   const entries = await Promise.all(
     promptNames.map(async (name) => {
       const config = await loadPromptConfig(name);
-      return [name, config] as const;
+      return [name, {
+        ...config,
+        placeholders: DEFAULT_SETTINGS.prompts[name].placeholders
+      }] as const;
     })
   );
   return Object.fromEntries(entries) as AppSettings['prompts'];

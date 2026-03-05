@@ -33,24 +33,6 @@ Your responsibilities:
    - Marketing fluff unrelated to the role or company identity
    - Repeated or irrelevant content
 
-5. Output format:
-   A. Job Details
-      - Job Title
-      - Summary
-      - Responsibilities
-      - Requirements
-      - Preferred Qualifications
-      - Skills
-      - Experience Level
-      - Location
-
-   B. Company Details
-      - Company Overview
-      - Mission / Values
-      - Culture
-      - Product / Industry
-      - Team Description (if present)
-
 Constraints:
 - Do not invent or infer details not present in the HTML.
 - Do not rewrite or optimize content; only extract and clean it.

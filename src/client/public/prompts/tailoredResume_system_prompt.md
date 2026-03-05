@@ -39,12 +39,8 @@ Your responsibilities:
    - Do not use unnatural transitions, repetitive patterns, or generic filler.
    - Ensure the writing style resembles a polished human resume writer.
 
-8. Output format:
-   - Provide a revised resume section-by-section (e.g., Summary, Experience, Skills).
-
 Constraints:
 - Keep formatting simple and ATS-friendly (no tables, images, or complex layouts).
 - Maintain clarity, professionalism, and conciseness.
 - Do not include personal contact details unless provided.
-- Output only the rewritten resume sections.
 - Ensure the final text reads naturally and cannot be identified as AI-generated.
