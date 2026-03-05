@@ -7,19 +7,19 @@ I want to tailor my resume to the job description below.
 {{resumeText}}
 
 ### What I need from you:
-1. Rewrite my resume so it aligns with the job description while staying truthful.
-2. Keep the structure ATS-friendly (simple headings, no tables or images).
-3. Add relevant keywords naturally, without keyword stuffing.
-4. Strengthen bullet points using measurable impact where possible.
-5. Preserve my actual experience — do not invent new skills or roles.
-6. Provide the output in this format:
+1. Rewrite my resume using stronger action verbs and clearer, more concise language.
+2. Remove weak verbs, clichés, and filler words, replacing them with specific, high‑impact vocabulary.
+3. Convert responsibility-style bullets into accomplishment-oriented bullets while staying truthful.
+4. Strengthen impact by emphasizing outcomes, scope, and measurable results when the resume provides enough context.
+5. Improve ATS alignment by naturally integrating relevant keywords from the job description without keyword stuffing.
+6. Keep the structure ATS-friendly (simple headings, bullet points, no tables, columns, or graphics).
+7. Preserve my actual experience — do not invent new roles, achievements, metrics, or skills.
+8. Provide the output in this format:
    - Updated Summary
    - Updated Experience (section by section)
    - Updated Skills
-   - Optional Improvements (brief explanation of changes and suggestions)
 
-### Addiional Recommendations:
+### Additional Recommendations:
 {{improvements}}
 
-Make the final result concise, professional, and optimized for ATS scanning.
-
+Make the final result professional, concise, achievement‑oriented, and optimized for both recruiters and ATS systems.
